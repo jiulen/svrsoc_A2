@@ -6,6 +6,7 @@ using TMPro; //for text mesh pro UI elements
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Linq;
 
 public class PlayFabUserMgtTMP : MonoBehaviour
 {
@@ -69,9 +70,13 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     GameObject landingLoadingObj, gameLoadingObj;
 
     List<FriendInfo> _friends = null;
+    List<FriendInfo> confirmedFriends = null;
+    List<string> confirmedIDs = null;
 
     public GameObject moveUpTextPrefab;
     public Transform popupTextHolder;
+
+    static string mePlayerID;
 
     //bools
     public bool loadingLeaderboard = false;
@@ -136,13 +141,16 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         }
     }
 
-    public void LoadPlayerHeadName()
+    public void LoadPlayerInfo()
     {
         var ProfileRequestParams = new GetPlayerProfileRequest();
 
         PlayFabClientAPI.GetPlayerProfile(ProfileRequestParams,
                                           result => {
-                                              if (player != null) player.SetDisplayName(result.PlayerProfile.DisplayName);
+                                              if (player != null)
+                                              {
+                                                  player.SetDisplayNameID(result.PlayerProfile.DisplayName, result.PlayerProfile.PlayerId);
+                                              }
                                           },
                                           error => { });
     }
@@ -317,6 +325,9 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             PlayFabClientAPI.UpdateUserTitleDisplayName(req, OnDisplayNameUpdate, OnLoginScreenError);
         }
 
+        mePlayerID = r.PlayFabId;
+        Debug.Log("My Playfab ID : " + mePlayerID);
+
         UpdateMsg("Login success!", loginTxt);
         //GetUserData(); //Player Data
         if (loginRmb.isOn)
@@ -445,12 +456,12 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
                                                             editDispnameButton.interactable = true;
 
-                                                            if (player != null) player.SetDisplayName(newDispName);
+                                                            if (player != null) player.SetDisplayNameID(newDispName);
                                                         }, 
                                                         error => {
                                                             dispname_field.text = oldDispname;
 
-                                                            if (player != null) player.SetDisplayName(oldDispname);
+                                                            if (player != null) player.SetDisplayNameID(oldDispname);
 
                                                             dispname_error.color = Color.red;
                                                             dispname_error.text = "Failed to change display name";
@@ -488,13 +499,30 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     {
         loadingLeaderboard = true;
 
-        var lbreq = new GetFriendLeaderboardRequest
+        //get friend list to filter leaderboard first
+        PlayFabClientAPI.GetFriendsList(new GetFriendsListRequest
         {
-            StatisticName = leaderboardName, //playfab leaderboard statistic name
-            StartPosition = 0,
-            MaxResultsCount = 10
-        };
-        PlayFabClientAPI.GetFriendLeaderboard(lbreq, OnLeaderboardGet, OnLeaderboardError);
+            // ExternalPlatformFriends = false,
+            // XboxToken = null
+        }, result => {
+            _friends = result.Friends;
+
+            //filter friends by "confirmed" tag
+            confirmedFriends = _friends.FindAll(friend => friend.Tags.Contains("confirmed"));
+            //take confirmed friend ids
+            confirmedIDs = confirmedFriends.Select(friend => friend.FriendPlayFabId).ToList();
+
+            //send get leaderboard req
+            var lbreq = new GetFriendLeaderboardRequest
+            {
+                StatisticName = leaderboardName, //playfab leaderboard statistic name
+                StartPosition = 0,
+                MaxResultsCount = 10 + _friends.Count - confirmedFriends.Count //to guarantee 10 results if possible
+            };
+            PlayFabClientAPI.GetFriendLeaderboard(lbreq, OnFriendLeaderboardGet, OnLeaderboardError);
+
+
+        }, error => UpdateMsg("Failed to get friend list", lbTxt));
     }
     void OnLeaderboardGet(GetLeaderboardResult r)
     {
@@ -523,6 +551,33 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         int lbItemNum = 0;
 
         foreach (var item in r.Leaderboard)
+        {
+            var lbItemScript = lbItems[lbItemNum].GetComponent<LeaderboardItem>();
+            lbItemScript.SetInfo((item.Position + 1).ToString(), item.DisplayName, item.StatValue.ToString());
+            lbItemScript.gameObject.SetActive(true);
+
+            ++lbItemNum;
+        }
+
+        for (int i = lbItemNum; i < lbMax; ++i)
+        {
+            var lbItemScript = lbItems[i].GetComponent<LeaderboardItem>();
+            lbItemScript.SetInfo("", "", "");
+            lbItemScript.gameObject.SetActive(false);
+        }
+
+        loadingLeaderboard = false;
+    }
+    void OnFriendLeaderboardGet(GetLeaderboardResult r)
+    {
+        var confirmedLeaderboard = r.Leaderboard.FindAll(entry => confirmedIDs.Contains(entry.PlayFabId) || entry.PlayFabId == mePlayerID);
+        //take top 10
+        var finalLeaderboard = confirmedLeaderboard.Take(10).ToList();
+
+        //make leaderboard
+        int lbItemNum = 0;
+
+        foreach (var item in finalLeaderboard)
         {
             var lbItemScript = lbItems[lbItemNum].GetComponent<LeaderboardItem>();
             lbItemScript.SetInfo((item.Position + 1).ToString(), item.DisplayName, item.StatValue.ToString());
@@ -742,7 +797,6 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             // XboxToken = null
         }, result => {
             _friends = result.Friends;
-            DisplayFriends(_friends); // triggers your UI
         }, OnErrorDefault);
     }
 
@@ -813,10 +867,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         PlayFabClientAPI.ExecuteCloudScript(sendReq
         , result =>
         {
-
+            MakeScrollNotif("Friend request sent successfully!", Color.green);
         }
         , error =>
         {
+            MakeScrollNotif("Failed to send friend request!", Color.red);
         });
     }
 
@@ -830,10 +885,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         PlayFabClientAPI.ExecuteCloudScript(acceptReq
         , result =>
         {
-
+            //MakeScrollNotif("Friend request accepted successfully!", Color.green);
         }
         , error =>
         {
+            MakeScrollNotif("Failed to accept friend request!", Color.red);
         });
     }
 
@@ -847,10 +903,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         PlayFabClientAPI.ExecuteCloudScript(denyReq
         , result =>
         {
-
+            //MakeScrollNotif("Friend request denied successfully!", Color.green);
         }
         , error =>
         {
+            MakeScrollNotif("Failed to deny friend request!", Color.red);
         });
     }
 }

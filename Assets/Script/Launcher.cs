@@ -39,7 +39,7 @@ public class Launcher : MonoBehaviourPunCallbacks
             playerScript.settingButton.SetActive(false);
 
             pfManager.player = playerScript;
-            pfManager.LoadPlayerHeadName();
+            pfManager.LoadPlayerInfo();
         }
     }    
 

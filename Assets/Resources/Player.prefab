@@ -1653,6 +1653,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5461916f732fb0449fbfedf9bb3e59a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playfabPlayerID: 
   isOffline: 0
   playerName: {fileID: 877423281558802418}
   settingButton: {fileID: 8283173257215351221}

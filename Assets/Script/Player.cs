@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class Player : MonoBehaviourPunCallbacks
 {
+    public string playfabPlayerID;
+
     private float moveSpeed = 7.0f;
     private bool canMove = true;
 
@@ -54,6 +56,7 @@ public class Player : MonoBehaviourPunCallbacks
 
     //strings
     public const string PLAYER_NAME = "PlayerName";
+    public const string PLAYER_ID = "PlayerID";
 
     // Start is called before the first frame update
     void Start()
@@ -81,11 +84,29 @@ public class Player : MonoBehaviourPunCallbacks
             playerName.text = (string)newPlayerName;
             playerOptionsName.text = (string)newPlayerName;
         }
+        if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_ID, out object newPlayerID))
+        {
+            if ((string)newPlayerID != "")
+            {
+                playfabPlayerID = (string)newPlayerID;
+            }
+        }
 
         if (photonView.IsMine || isOffline)
         {
             eButton.SetActive(false);
         }
+
+        //buttons
+        addFriendButton.onClick.AddListener(() =>
+        {
+            pfManager.SendFriendRequest(playfabPlayerID);
+        });
+
+        tradeButton.onClick.AddListener(() =>
+        {
+            Debug.Log("tradeReq");
+        });
     }
 
     // Update is called once per frame
@@ -256,9 +277,15 @@ public class Player : MonoBehaviourPunCallbacks
         }
     }
 
-    public void SetDisplayName(string displayName)
+    public void SetDisplayNameID(string displayName, string playerID = "")
     {
         ExitGames.Client.Photon.Hashtable playerProps = new() { { PLAYER_NAME, displayName } };
+        if (playerID != "")
+        {
+            playerProps.Add(PLAYER_ID, playerID);
+
+            playfabPlayerID = playerID;
+        }
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProps);
 
         playerName.text = displayName;
@@ -275,6 +302,14 @@ public class Player : MonoBehaviourPunCallbacks
             {
                 playerName.text = (string)newPlayerName;
                 playerOptionsName.text = (string)newPlayerName;
+            }
+
+            if (changedProps.TryGetValue(PLAYER_ID, out object newPlayerID))
+            {
+                if ((string)newPlayerID != "")
+                {
+                    playfabPlayerID = (string)newPlayerID;
+                }
             }
         }
     }
