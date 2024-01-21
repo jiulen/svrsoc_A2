@@ -599,6 +599,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         },
         result =>
         {
+            if (playerColorSwitcher == null)
+            {
+                playerColorSwitcher = player.GetComponent<PlayerColorSwitcher>();
+            }
+
             switch (skinColor)
             {
                 case "BLUE":

@@ -36,6 +36,7 @@ public class Launcher : MonoBehaviourPunCallbacks
             GameObject playerObj = PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
             playerObj.name = "Player (Me)";
             Player playerScript = playerObj.GetComponent<Player>();
+            playerScript.settingButton.SetActive(false);
 
             pfManager.player = playerScript;
             pfManager.LoadPlayerHeadName();

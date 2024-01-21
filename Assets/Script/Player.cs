@@ -4,6 +4,7 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviourPunCallbacks
 {
@@ -41,7 +42,15 @@ public class Player : MonoBehaviourPunCallbacks
     private CONTACT_TYPE contactType;
     private TextMeshProUGUI currentText;
 
+    //player name (head)
     public TMP_Text playerName;
+    public GameObject settingButton;
+
+    //player options
+    public TMP_Text playerOptionsName;
+    public GameObject optionsPanel;
+    public Button addFriendButton;
+    public Button tradeButton;
 
     //strings
     public const string PLAYER_NAME = "PlayerName";
@@ -70,6 +79,7 @@ public class Player : MonoBehaviourPunCallbacks
         if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_NAME, out object newPlayerName))
         {
             playerName.text = (string)newPlayerName;
+            playerOptionsName.text = (string)newPlayerName;
         }
 
         if (photonView.IsMine || isOffline)
@@ -252,6 +262,7 @@ public class Player : MonoBehaviourPunCallbacks
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProps);
 
         playerName.text = displayName;
+        playerOptionsName.text = displayName;
     }
 
     public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
@@ -263,6 +274,7 @@ public class Player : MonoBehaviourPunCallbacks
             if (changedProps.TryGetValue(PLAYER_NAME, out object newPlayerName))
             {
                 playerName.text = (string)newPlayerName;
+                playerOptionsName.text = (string)newPlayerName;
             }
         }
     }
@@ -271,5 +283,11 @@ public class Player : MonoBehaviourPunCallbacks
     public void AddCoinsRpc(int coinsToAdd)
     {
         invenManager.AddCoins(coinsToAdd);
+    }
+
+    public void OpenOptions(bool open)
+    {
+        optionsPanel.SetActive(open);
+        pfManager.openUI = open;
     }
 }
