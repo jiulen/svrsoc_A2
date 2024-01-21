@@ -226,13 +226,10 @@ public class Player : MonoBehaviourPunCallbacks
 
     public void SetDisplayName(string displayName)
     {
-        Debug.Log("change disp name : " + displayName);
-
         ExitGames.Client.Photon.Hashtable playerProps = new() { { PLAYER_NAME, displayName } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProps);
 
         playerName.text = displayName;
-        Debug.Log("sett : " + displayName);
     }
 
     public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
@@ -244,7 +241,6 @@ public class Player : MonoBehaviourPunCallbacks
             if (changedProps.TryGetValue(PLAYER_NAME, out object newPlayerName))
             {
                 playerName.text = (string)newPlayerName;
-                Debug.Log("change2 : " + (string)newPlayerName);
             }
         }
     }

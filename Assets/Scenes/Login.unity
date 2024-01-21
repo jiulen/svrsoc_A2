@@ -3425,7 +3425,16 @@ MonoBehaviour:
   invenManager: {fileID: 0}
   loggedIn: 0
   openUI: 0
+  bgManager: {fileID: 0}
+  playerColorSwitcher: {fileID: 0}
+  motdText: {fileID: 0}
+  landingLoadingObj: {fileID: 0}
+  gameLoadingObj: {fileID: 0}
   loadingLeaderboard: 0
+  loadingPlayerData: 0
+  loadingDispName: 0
+  loadingMOTD: 0
+  player: {fileID: 0}
 --- !u!4 &620204596
 Transform:
   m_ObjectHideFlags: 0
