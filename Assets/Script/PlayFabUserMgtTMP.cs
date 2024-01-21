@@ -70,6 +70,9 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     List<FriendInfo> _friends = null;
 
+    public GameObject moveUpTextPrefab;
+    public Transform popupTextHolder;
+
     //bools
     public bool loadingLeaderboard = false;
     public bool loadingPlayerData = false;
@@ -78,6 +81,18 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     //photon stuff
     public Player player;
+
+    public void MakeScrollNotif(string textDisplayed, Color textColor)
+    {
+        GameObject newTextPopup = Instantiate(moveUpTextPrefab);
+        newTextPopup.transform.SetParent(popupTextHolder);
+        newTextPopup.transform.localPosition = Vector3.zero;
+
+        MoveUpText moveUpText = newTextPopup.GetComponent<MoveUpText>();
+
+        moveUpText.SetText(textDisplayed, textColor);
+        moveUpText.ResetStretch();
+    }
 
     private void Awake()
     {
@@ -782,5 +797,56 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         }, OnErrorDefault);
     }
 
+    //new friend
+    public void SendFriendRequest(string friendID)
+    {
+        var sendReq = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "SendFriendRequest",
+            FunctionParameter = new { FriendPlayFabId = friendID }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(sendReq
+        , result =>
+        {
+
+        }
+        , error =>
+        {
+        });
+    }
+
+    public void AcceptFriendRequest(string friendID)
+    {
+        var acceptReq = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "AcceptFriendRequest",
+            FunctionParameter = new { FriendPlayFabId = friendID }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(acceptReq
+        , result =>
+        {
+
+        }
+        , error =>
+        {
+        });
+    }
+
+    public void DenyFriendRequest(string friendID)
+    {
+        var denyReq = new ExecuteCloudScriptRequest
+        {
+            FunctionName = "DenyFriendRequest",
+            FunctionParameter = new { FriendPlayFabId = friendID }
+        };
+        PlayFabClientAPI.ExecuteCloudScript(denyReq
+        , result =>
+        {
+
+        }
+        , error =>
+        {
+        });
+    }
 }
 

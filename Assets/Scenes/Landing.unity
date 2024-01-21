@@ -817,6 +817,8 @@ MonoBehaviour:
   motdText: {fileID: 1609829511}
   landingLoadingObj: {fileID: 665199941}
   gameLoadingObj: {fileID: 0}
+  moveUpTextPrefab: {fileID: 2738692183049770539, guid: 9929fd44291c8ee44824ed267c46a387, type: 3}
+  popupTextHolder: {fileID: 676821143}
   loadingLeaderboard: 0
   loadingPlayerData: 0
   loadingDispName: 0

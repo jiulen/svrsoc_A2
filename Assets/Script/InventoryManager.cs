@@ -129,27 +129,13 @@ public class InventoryManager : MonoBehaviour
         PlayFabClientAPI.PurchaseItem(buyReq,
             result => {
                 buyingItem = false;
-
-                GameObject newTextPopup = Instantiate(moveUpTextPrefab);
-                newTextPopup.transform.SetParent(popupTextHolder);
-                newTextPopup.transform.localPosition = Vector3.zero;
-
-                MoveUpText moveUpText = newTextPopup.GetComponent<MoveUpText>();
-
                 string itemName = result.Items[0].DisplayName;
-                moveUpText.SetText(itemName + " bought", Color.green);
-                moveUpText.ResetStretch();
+
+                pfManager.MakeScrollNotif(itemName + " bought", Color.green);
             },
             error =>
             {
-                GameObject newTextPopup = Instantiate(moveUpTextPrefab);
-                newTextPopup.transform.SetParent(popupTextHolder);
-                newTextPopup.transform.localPosition = Vector3.zero;
-
-                MoveUpText moveUpText = newTextPopup.GetComponent<MoveUpText>();
-
-                moveUpText.SetText(error.Error.ToString(), Color.red);
-                moveUpText.ResetStretch();
+                pfManager.MakeScrollNotif(error.Error.ToString(), Color.red);
             });
     }
 
@@ -168,27 +154,13 @@ public class InventoryManager : MonoBehaviour
                 consumingItem = false;
                 consumedItemID = itemID;
 
-                GameObject newTextPopup = Instantiate(moveUpTextPrefab);
-                newTextPopup.transform.SetParent(popupTextHolder);
-                newTextPopup.transform.localPosition = Vector3.zero;
-
-                MoveUpText moveUpText = newTextPopup.GetComponent<MoveUpText>();
-
-                moveUpText.SetText("Consumed " + itemName, Color.green);
-                moveUpText.ResetStretch();
+                pfManager.MakeScrollNotif("Consumed " + itemName, Color.green);
 
                 GetPlayerInventory();
             },
             error =>
             {
-                GameObject newTextPopup = Instantiate(moveUpTextPrefab);
-                newTextPopup.transform.SetParent(popupTextHolder);
-                newTextPopup.transform.localPosition = Vector3.zero;
-
-                MoveUpText moveUpText = newTextPopup.GetComponent<MoveUpText>();
-
-                moveUpText.SetText("Failed consume " + itemName, Color.red);
-                moveUpText.ResetStretch();
+                pfManager.MakeScrollNotif("Failed to consume " + itemName, Color.red);
             });
     }
 }
