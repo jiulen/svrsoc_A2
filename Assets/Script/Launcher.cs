@@ -8,6 +8,8 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject PlayerPrefab;
     public bool isOffline = false;
 
+    public PlayFabUserMgtTMP pfManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -31,7 +33,12 @@ public class Launcher : MonoBehaviourPunCallbacks
         if (!isOffline)
         {
             Debug.Log("Joined");
-            PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
+            GameObject playerObj = PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
+            playerObj.name = "Player (Me)";
+            Player playerScript = playerObj.GetComponent<Player>();
+
+            pfManager.player = playerScript;
+            pfManager.LoadPlayerHeadName();
         }
     }    
 

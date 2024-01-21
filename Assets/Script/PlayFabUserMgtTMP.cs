@@ -35,7 +35,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     const int lbMax = 10;
 
     [Header("Player Info")]
-    [SerializeField] TMP_InputField dispname_field;
+    public TMP_InputField dispname_field;
     [SerializeField] TMP_Text XP_field;
     [SerializeField] TMP_Text level_field;
     [SerializeField] TMP_Text coins_field, shop_coins_field;
@@ -75,6 +75,9 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public bool loadingPlayerData = false;
     public bool loadingDispName = false;
     public bool loadingMOTD = false;
+
+    //photon stuff
+    public Player player;
 
     private void Awake()
     {
@@ -116,6 +119,17 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                                               },
                                               error => { });
         }
+    }
+
+    public void LoadPlayerHeadName()
+    {
+        var ProfileRequestParams = new GetPlayerProfileRequest();
+
+        PlayFabClientAPI.GetPlayerProfile(ProfileRequestParams,
+                                          result => {
+                                              if (player != null) player.SetDisplayName(result.PlayerProfile.DisplayName);
+                                          },
+                                          error => { });
     }
 
     private void Update()
@@ -397,7 +411,9 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
         openUI = false;
 
-        if (dispname_field.text == oldDispname)
+        string newDispName = dispname_field.text;
+
+        if (newDispName == oldDispname)
         {
             editDispnameButton.interactable = true;
         }
@@ -405,7 +421,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         {
             var req = new UpdateUserTitleDisplayNameRequest
             {
-                DisplayName = dispname_field.text,
+                DisplayName = newDispName,
             };
             // update to profile
             PlayFabClientAPI.UpdateUserTitleDisplayName(req, 
@@ -415,9 +431,13 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                                                             StartCoroutine(ErrorTimer(1, dispname_error));
 
                                                             editDispnameButton.interactable = true;
+
+                                                            if (player != null) player.SetDisplayName(newDispName);
                                                         }, 
                                                         error => {
                                                             dispname_field.text = oldDispname;
+
+                                                            if (player != null) player.SetDisplayName(oldDispname);
 
                                                             dispname_error.color = Color.red;
                                                             dispname_error.text = "Failed to change display name";

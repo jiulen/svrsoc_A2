@@ -39,6 +39,11 @@ public class Player : MonoBehaviourPunCallbacks
     private CONTACT_TYPE contactType;
     private TextMeshProUGUI currentText;
 
+    public TMP_Text playerName;
+
+    //strings
+    public const string PLAYER_NAME = "PlayerName";
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,6 +62,13 @@ public class Player : MonoBehaviourPunCallbacks
         pfManager = GameObject.Find("PFManager").GetComponent<PlayFabUserMgtTMP>();
 
         canMove = true;
+
+        if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_NAME, out object newPlayerName))
+        {
+            playerName.text = (string)newPlayerName;
+            Debug.Log("change : " + playerName.text);
+        }
+
         if (photonView.IsMine || isOffline)
         {
             eButton.SetActive(false);
@@ -209,6 +221,31 @@ public class Player : MonoBehaviourPunCallbacks
             canMove = true;
             animator.enabled = true;
             eButton.SetActive(true);
+        }
+    }
+
+    public void SetDisplayName(string displayName)
+    {
+        Debug.Log("change disp name : " + displayName);
+
+        ExitGames.Client.Photon.Hashtable playerProps = new() { { PLAYER_NAME, displayName } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(playerProps);
+
+        playerName.text = displayName;
+        Debug.Log("sett : " + displayName);
+    }
+
+    public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        base.OnPlayerPropertiesUpdate(targetPlayer, changedProps);
+
+        if (!photonView.IsMine && targetPlayer == photonView.Owner)
+        {
+            if (changedProps.TryGetValue(PLAYER_NAME, out object newPlayerName))
+            {
+                playerName.text = (string)newPlayerName;
+                Debug.Log("change2 : " + (string)newPlayerName);
+            }
         }
     }
 }
