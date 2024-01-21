@@ -78,6 +78,9 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     static string mePlayerID;
 
+    public bool pendingColorSwitch = false;
+    public Color pendingColor;
+
     //bools
     public bool loadingLeaderboard = false;
     public bool loadingPlayerData = false;
@@ -157,6 +160,20 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     private void Update()
     {
+        if (pendingColorSwitch)
+        {
+            if (playerColorSwitcher == null)
+            {
+                if (player != null)
+                {
+                    playerColorSwitcher = player.GetComponent<PlayerColorSwitcher>();
+
+                    playerColorSwitcher.ChangePlayerColor(pendingColor);
+                    pendingColorSwitch = false;
+                }
+            }
+        }
+
         if (loggedIn)
         {
             if (invenManager != null)
@@ -656,7 +673,10 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         {
             if (playerColorSwitcher == null)
             {
-                playerColorSwitcher = player.GetComponent<PlayerColorSwitcher>();
+                if (player != null)
+                {
+                    playerColorSwitcher = player.GetComponent<PlayerColorSwitcher>();
+                }
             }
 
             switch (skinColor)
@@ -740,11 +760,25 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                 }
             }
 
+
+            if (playerColorSwitcher == null)
+            {
+                if (player != null)
+                {
+                    playerColorSwitcher = player.GetComponent<PlayerColorSwitcher>();
+                }
+            }
+
             if (result.Data == null || !result.Data.ContainsKey("SkinColor"))
             {
                 if (playerColorSwitcher != null)
                 {
                     playerColorSwitcher.ChangePlayerColor(Color.white);
+                }
+                else
+                {
+                    pendingColorSwitch = true;
+                    pendingColor = Color.white;
                 }
             }
             else
@@ -758,6 +792,19 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                             break;
                         case "GREEN":
                             playerColorSwitcher.ChangePlayerColor(Color.green);
+                            break;
+                    }
+                }
+                else
+                {
+                    pendingColorSwitch = true;
+                    switch (result.Data["SkinColor"].Value)
+                    {
+                        case "BLUE":
+                            pendingColor = Color.blue;
+                            break;
+                        case "GREEN":
+                            pendingColor = Color.green;
                             break;
                     }
                 }

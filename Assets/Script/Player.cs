@@ -174,7 +174,7 @@ public class Player : MonoBehaviourPunCallbacks
         if(!isOffline)
         {
             PhotonNetwork.Disconnect();
-            PhotonNetwork.LoadLevel(1);
+            PhotonNetwork.LoadLevel("Game");
         }
         else
         {
