@@ -13,6 +13,7 @@ TagManager:
   - Shop
   - Game
   - Ground
+  - Coin
   layers:
   - Default
   - TransparentFX

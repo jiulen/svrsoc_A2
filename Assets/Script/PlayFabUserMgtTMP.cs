@@ -48,7 +48,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     [SerializeField]
     InventoryManager invenManager;
-    bool gettingCoins = false;
+    public bool gettingCoins = false;
 
     public bool loggedIn = true;
 
@@ -148,8 +148,6 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                     boughtItem = false;
                     gettingCoins = true;
                     invenManager.GetVirtualCurrencies();
-
-                    Debug.Log("reset coins");
                 }
 
                 if (!invenManager.loadingCoins && gettingCoins)

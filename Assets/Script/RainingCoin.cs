@@ -11,7 +11,7 @@ public class RainingCoin : MonoBehaviour
 
     SpriteRenderer sr;
 
-    bool destroyed;
+    public bool destroyed;
 
     // Start is called before the first frame update
     void Start()

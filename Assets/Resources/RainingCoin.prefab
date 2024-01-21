@@ -67,7 +67,7 @@ GameObject:
   - component: {fileID: 6366347882077593860}
   m_Layer: 0
   m_Name: RainingCoin
-  m_TagString: Untagged
+  m_TagString: Coin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -277,3 +277,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lifespan: 10
   startFadeTime: 5
+  destroyed: 0

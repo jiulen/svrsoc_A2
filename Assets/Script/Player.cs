@@ -26,6 +26,8 @@ public class Player : MonoBehaviourPunCallbacks
 
     PlayFabUserMgtTMP pfManager;
 
+    InventoryManager invenManager;
+
     enum CONTACT_TYPE
     {
         NIL,
@@ -61,12 +63,13 @@ public class Player : MonoBehaviourPunCallbacks
 
         pfManager = GameObject.Find("PFManager").GetComponent<PlayFabUserMgtTMP>();
 
+        invenManager = GameObject.Find("InvenManager").GetComponent<InventoryManager>();
+
         canMove = true;
 
         if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_NAME, out object newPlayerName))
         {
             playerName.text = (string)newPlayerName;
-            Debug.Log("change : " + playerName.text);
         }
 
         if (photonView.IsMine || isOffline)
@@ -169,6 +172,22 @@ public class Player : MonoBehaviourPunCallbacks
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (PhotonNetwork.IsMasterClient || isOffline)
+        {
+            if (collision.gameObject.CompareTag("Coin"))
+            {
+                RainingCoin rainingCoin = collision.GetComponent<RainingCoin>();
+
+                if (rainingCoin.destroyed)
+                    return;
+
+                photonView.RPC("AddCoinsRpc", photonView.Owner, 1);
+                rainingCoin.destroyed = true;
+                PhotonNetwork.Destroy(rainingCoin.gameObject);
+            }
+        }
+        
+
         if (photonView.IsMine || isOffline)
         {
             if (collision.gameObject.CompareTag("Guild"))
@@ -208,9 +227,12 @@ public class Player : MonoBehaviourPunCallbacks
     {
         if (photonView.IsMine || isOffline)
         {
-            contactType = CONTACT_TYPE.NIL;
-            eButton.SetActive(false);
-            currentText.text = "";
+            if (!collision.gameObject.CompareTag("Coin"))
+            {
+                contactType = CONTACT_TYPE.NIL;
+                eButton.SetActive(false);
+                currentText.text = "";
+            }
         }
     }
 
@@ -243,5 +265,11 @@ public class Player : MonoBehaviourPunCallbacks
                 playerName.text = (string)newPlayerName;
             }
         }
+    }
+
+    [PunRPC]
+    public void AddCoinsRpc(int coinsToAdd)
+    {
+        invenManager.AddCoins(coinsToAdd);
     }
 }

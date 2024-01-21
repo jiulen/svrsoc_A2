@@ -29,6 +29,8 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] GameObject moveUpTextPrefab;
     [SerializeField] Transform popupTextHolder;
 
+    [SerializeField] PlayFabUserMgtTMP pfManager;
+
     void UpdateMsg()
     {
 
@@ -61,7 +63,8 @@ public class InventoryManager : MonoBehaviour
         },
         r =>
         {
-
+            pfManager.gettingCoins = true;
+            GetVirtualCurrencies();
         }, OnError);
     }
 
