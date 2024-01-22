@@ -639,7 +639,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 15}
-  m_SizeDelta: {x: 200, y: 60}
+  m_SizeDelta: {x: 400, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6446175297608193554
 MonoBehaviour:
@@ -915,7 +915,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -80}
-  m_SizeDelta: {x: 200, y: 60}
+  m_SizeDelta: {x: 400, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5816832298402916620
 MonoBehaviour:
@@ -1660,6 +1660,7 @@ MonoBehaviour:
   playerOptionsName: {fileID: 9106918168197762470}
   optionsPanel: {fileID: 6502981096086203472}
   addFriendButton: {fileID: 6446175297608193554}
+  addFriendText: {fileID: 1985561121786322655}
   tradeButton: {fileID: 5816832298402916620}
 --- !u!95 &8875753840370992055
 Animator:

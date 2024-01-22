@@ -817,8 +817,11 @@ MonoBehaviour:
   motdText: {fileID: 1609829511}
   landingLoadingObj: {fileID: 665199941}
   gameLoadingObj: {fileID: 0}
+  _friends: []
   moveUpTextPrefab: {fileID: 2738692183049770539, guid: 9929fd44291c8ee44824ed267c46a387, type: 3}
   popupTextHolder: {fileID: 676821143}
+  pendingColorSwitch: 0
+  pendingColor: {r: 0, g: 0, b: 0, a: 0}
   loadingLeaderboard: 0
   loadingPlayerData: 0
   loadingDispName: 0
@@ -3675,6 +3678,18 @@ MonoBehaviour:
       - m_Target: {fileID: 93469141}
         m_TargetAssemblyTypeName: PlayFabUserMgtTMP, Assembly-CSharp
         m_MethodName: OnButtonLogout
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1589409626}
+        m_TargetAssemblyTypeName: Launcher, Assembly-CSharp
+        m_MethodName: PhotonLogout
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

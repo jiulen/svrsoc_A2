@@ -41,7 +41,13 @@ public class Launcher : MonoBehaviourPunCallbacks
             pfManager.player = playerScript;
             pfManager.LoadPlayerInfo();
         }
-    }    
+    }
+    
+    public void PhotonLogout()
+    {
+        PhotonNetwork.LeaveRoom(false);
+        PhotonNetwork.Disconnect();
+    }
 
     // Update is called once per frame
     void Update()

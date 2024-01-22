@@ -69,7 +69,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     [SerializeField]
     GameObject landingLoadingObj, gameLoadingObj;
 
-    List<FriendInfo> _friends = null;
+    public List<FriendInfo> _friends = null;
     List<FriendInfo> confirmedFriends = null;
     List<string> confirmedIDs = null;
 
@@ -124,6 +124,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                 gettingCoins = true;
                 invenManager.GetVirtualCurrencies();
             }
+            GetFriends();
         }
 
         if (dispname_field != null)
@@ -836,7 +837,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         });*/
     }
 
-    public void GetFriends()
+    //friend
+    public void GetFriends(Player friendPlayer = null)
     {
         PlayFabClientAPI.GetFriendsList(new GetFriendsListRequest
         {
@@ -844,67 +846,14 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             // XboxToken = null
         }, result => {
             _friends = result.Friends;
+            if (friendPlayer != null)
+            {
+                friendPlayer.UpdateOptions();
+            }
         }, OnErrorDefault);
     }
 
-    enum FriendIdType { PlayFabId, Username, Email, DisplayName };
-    void AddFriend(FriendIdType idType, string friendId)
-    {
-        var request = new AddFriendRequest();
-        switch (idType)
-        {
-            case FriendIdType.PlayFabId:
-                request.FriendPlayFabId = friendId;
-                break;
-            case FriendIdType.Username:
-                request.FriendUsername = friendId;
-                break;
-            case FriendIdType.Email:
-                request.FriendEmail = friendId;
-                break;
-            case FriendIdType.DisplayName:
-                request.FriendTitleDisplayName = friendId;
-                break;
-        }
-        // Execute request and update friends when we are done
-        PlayFabClientAPI.AddFriend(request, result => {
-            Debug.Log("Friend added successfully!");
-        }, OnErrorDefault);
-    }
-    public void OnAddFriend()
-    { 
-        //to add friend based on display name
-        //AddFriend(FriendIdType.DisplayName, tgtFriend.text);
-    }
-    // unlike AddFriend, RemoveFriend only takes a PlayFab ID
-    // you can get this from the FriendInfo object under FriendPlayFabId
-    void RemoveFriend(FriendInfo friendInfo)
-    { //to investigat
-        PlayFabClientAPI.RemoveFriend(new RemoveFriendRequest
-        {
-            FriendPlayFabId = friendInfo.FriendPlayFabId
-        }, result => {
-            _friends.Remove(friendInfo);
-        }, OnErrorDefault);
-    }
-    public void OnUnFriend()
-    {
-        //RemoveFriend(tgtunfrnd.text);
-    }
-    void RemoveFriend(string pfid)
-    {
-        var req = new RemoveFriendRequest
-        {
-            FriendPlayFabId = pfid
-        };
-        PlayFabClientAPI.RemoveFriend(req
-        , result => {
-            Debug.Log("unfriend!");
-        }, OnErrorDefault);
-    }
-
-    //new friend
-    public void SendFriendRequest(string friendID)
+    public void SendFriendRequest(Player friendPlayer, string friendID)
     {
         var sendReq = new ExecuteCloudScriptRequest
         {
@@ -915,6 +864,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         , result =>
         {
             MakeScrollNotif("Friend request sent successfully!", Color.green);
+            GetFriends(friendPlayer);
         }
         , error =>
         {

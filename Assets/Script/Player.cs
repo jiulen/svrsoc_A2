@@ -52,6 +52,7 @@ public class Player : MonoBehaviourPunCallbacks
     public TMP_Text playerOptionsName;
     public GameObject optionsPanel;
     public Button addFriendButton;
+    public TMP_Text addFriendText;
     public Button tradeButton;
 
     //strings
@@ -100,7 +101,7 @@ public class Player : MonoBehaviourPunCallbacks
         //buttons
         addFriendButton.onClick.AddListener(() =>
         {
-            pfManager.SendFriendRequest(playfabPlayerID);
+            pfManager.SendFriendRequest(this, playfabPlayerID);
         });
 
         tradeButton.onClick.AddListener(() =>
@@ -324,5 +325,36 @@ public class Player : MonoBehaviourPunCallbacks
     {
         optionsPanel.SetActive(open);
         pfManager.openUI = open;
+
+        if (open)
+        {
+            UpdateOptions();
+        }
+    }
+
+    public void UpdateOptions()
+    {
+        PlayFab.ClientModels.FriendInfo thisFriend = pfManager._friends.Find(friend => friend.FriendPlayFabId == playfabPlayerID);
+        if (thisFriend != null)
+        {
+            if (thisFriend.Tags.Contains("confirmed"))
+            {
+                addFriendText.text = "Already friends!";
+
+                addFriendButton.interactable = false;
+            }
+            else if (thisFriend.Tags.Contains("requestee"))
+            {
+                addFriendText.text = "Sent friend request!";
+
+                addFriendButton.interactable = false;
+            }
+            else if (thisFriend.Tags.Contains("requester"))
+            {
+                addFriendText.text = "Incoming friend request!";
+
+                addFriendButton.interactable = false;
+            }
+        }
     }
 }
