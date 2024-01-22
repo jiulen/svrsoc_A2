@@ -81,6 +81,10 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public bool pendingColorSwitch = false;
     public Color pendingColor;
 
+    //friends
+    public Transform friendsParent;
+    public GameObject friendInfoPrefab, friendReqPrefab;
+
     //bools
     public bool loadingLeaderboard = false;
     public bool loadingPlayerData = false;
@@ -638,7 +642,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             Data = new Dictionary<string, string>() {
                 {"XP", XP.ToString()},
                 {"Level", level.ToString()}
-            }
+            },
+            Permission = UserDataPermission.Public
         },
         result => Debug.Log("Successfully updated user data"),
         error =>
@@ -825,18 +830,6 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         tMP_Text.text = "";
     }
 
-    //friends
-
-    void DisplayFriends(List<FriendInfo> friendsCache)
-    {
-        /*txtFrdList.text = "";
-        friendsCache.ForEach(f => {
-            Debug.Log(f.FriendPlayFabId + "," + f.TitleDisplayName);
-            txtFrdList.text += f.TitleDisplayName + "[" + f.FriendPlayFabId + "]\n";
-            if (f.Profile != null) Debug.Log(f.FriendPlayFabId + "/" + f.Profile.DisplayName);
-        });*/
-    }
-
     //friend
     public void GetFriends(Player friendPlayer = null)
     {
@@ -850,6 +843,132 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             {
                 friendPlayer.UpdateOptions();
             }
+        }, OnErrorDefault);
+    }
+
+
+    public void GetShowFriends()
+    {
+        PlayFabClientAPI.GetFriendsList(new GetFriendsListRequest
+        {
+            // ExternalPlatformFriends = false,
+            // XboxToken = null
+        }, result => {
+            //clear
+            foreach (Transform child in friendsParent)
+            {
+                Destroy(child.gameObject);
+            }
+
+            _friends = result.Friends;
+            foreach (FriendInfo friend in _friends)
+            {
+                if (friend.Tags.Contains("confirmed"))
+                {
+                    GameObject newItem = Instantiate(friendInfoPrefab);
+                    FriendInfoItem newFriendInfoItem = newItem.GetComponent<FriendInfoItem>();
+
+                    newItem.transform.SetParent(friendsParent);
+                    newItem.transform.localPosition = Vector3.zero;
+
+                    newFriendInfoItem.playerName.text = friend.TitleDisplayName;
+                    newFriendInfoItem.xp.text = "LVL ?";
+                    newFriendInfoItem.status.text = "Unknown";
+                    newFriendInfoItem.status.color = Color.gray;
+                    newFriendInfoItem.friendID = friend.FriendPlayFabId;
+
+                    var getDataReq = new GetUserDataRequest()
+                    {
+                        PlayFabId = friend.FriendPlayFabId
+                    };
+                    PlayFabClientAPI.GetUserData(getDataReq
+                    , result =>
+                    {
+                        if (newFriendInfoItem != null)
+                        {
+                            if (result.Data == null || !result.Data.ContainsKey("Level"))
+                            {
+                                newFriendInfoItem.xp.text = "LVL " + 0;
+                            }
+                            else
+                            {
+                                if (int.TryParse(result.Data["Level"].Value, out curLevel))
+                                {
+                                    newFriendInfoItem.xp.text = "LVL " + curLevel;
+                                }
+                                else
+                                {
+                                    newFriendInfoItem.xp.text = "LVL ?";
+                                }
+                            }
+                        }
+                    }, error => { });
+
+                }
+            }
+
+        }, OnErrorDefault);
+    }
+
+    public void GetFriendRequests()
+    {
+        PlayFabClientAPI.GetFriendsList(new GetFriendsListRequest
+        {
+            // ExternalPlatformFriends = false,
+            // XboxToken = null
+        }, result => {
+            //clear
+            foreach (Transform child in friendsParent)
+            {
+                Destroy(child.gameObject);
+            }
+
+            _friends = result.Friends;
+            foreach (FriendInfo friend in _friends)
+            {
+                if (friend.Tags.Contains("requester"))
+                {
+                    GameObject newItem = Instantiate(friendReqPrefab);
+                    FriendRequestItem newFriendRequestItem = newItem.GetComponent<FriendRequestItem>();
+
+                    newItem.transform.SetParent(friendsParent);
+                    newItem.transform.localPosition = Vector3.zero;
+
+                    newFriendRequestItem.playerName.text = friend.TitleDisplayName;
+                    newFriendRequestItem.xp.text = "LVL ?";
+                    newFriendRequestItem.status.text = "Unknown";
+                    newFriendRequestItem.status.color = Color.gray;
+                    newFriendRequestItem.friendID = friend.FriendPlayFabId;
+
+                    var getDataReq = new GetUserDataRequest()
+                    {
+                        PlayFabId = friend.FriendPlayFabId
+                    };
+                    PlayFabClientAPI.GetUserData(getDataReq
+                    , result =>
+                    {
+                        if (newFriendRequestItem != null)
+                        {
+                            if (result.Data == null || !result.Data.ContainsKey("Level"))
+                            {
+                                newFriendRequestItem.xp.text = "LVL " + 0;
+                            }
+                            else
+                            {
+                                if (int.TryParse(result.Data["Level"].Value, out curLevel))
+                                {
+                                    newFriendRequestItem.xp.text = "LVL " + curLevel;
+                                }
+                                else
+                                {
+                                    newFriendRequestItem.xp.text = "LVL ?";
+                                }
+                            }
+                        }
+                    }, error => { });
+                }
+            }
+
         }, OnErrorDefault);
     }
 
@@ -883,6 +1002,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         , result =>
         {
             //MakeScrollNotif("Friend request accepted successfully!", Color.green);
+            GetFriendRequests();
         }
         , error =>
         {
@@ -890,7 +1010,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         });
     }
 
-    public void DenyFriendRequest(string friendID)
+    public void DenyFriendRequest(string friendID, bool removeFriend = false)
     {
         var denyReq = new ExecuteCloudScriptRequest
         {
@@ -901,6 +1021,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         , result =>
         {
             //MakeScrollNotif("Friend request denied successfully!", Color.green);
+            if (!removeFriend) GetFriendRequests();
+            else GetShowFriends();
         }
         , error =>
         {
