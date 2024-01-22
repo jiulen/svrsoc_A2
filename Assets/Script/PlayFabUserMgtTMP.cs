@@ -602,7 +602,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         foreach (var item in finalLeaderboard)
         {
             var lbItemScript = lbItems[lbItemNum].GetComponent<LeaderboardItem>();
-            lbItemScript.SetInfo((item.Position + 1).ToString(), item.DisplayName, item.StatValue.ToString());
+            lbItemScript.SetInfo((lbItemNum + 1).ToString(), item.DisplayName, item.StatValue.ToString());
             lbItemScript.gameObject.SetActive(true);
 
             ++lbItemNum;
