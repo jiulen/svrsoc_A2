@@ -825,11 +825,13 @@ MonoBehaviour:
   friendsParent: {fileID: 1977891383}
   friendInfoPrefab: {fileID: 8397813145919526875, guid: 083e70ef5b62cc74e8662b139eca5cf6, type: 3}
   friendReqPrefab: {fileID: 8397813145919526875, guid: 0ad66394f89cb944385dcad312e4539a, type: 3}
+  isOffline: 0
   loadingLeaderboard: 0
   loadingPlayerData: 0
   loadingDispName: 0
   loadingMOTD: 0
   player: {fileID: 0}
+  launcher: {fileID: 1589409626}
 --- !u!1 &95067602
 GameObject:
   m_ObjectHideFlags: 0
@@ -23035,6 +23037,7 @@ MonoBehaviour:
   PlayerPrefab: {fileID: 8875753840370992061, guid: d2f77833ed7b1ba4c9b39a734be6ca91, type: 3}
   isOffline: 0
   pfManager: {fileID: 93469141}
+  friendsParent: {fileID: 1977891383}
 --- !u!4 &1589409627
 Transform:
   m_ObjectHideFlags: 0
@@ -24483,7 +24486,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96

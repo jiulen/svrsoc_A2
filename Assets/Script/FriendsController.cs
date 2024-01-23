@@ -48,6 +48,8 @@ public class FriendsController : MonoBehaviour
     }
     public void OpenPanel(System.Action callBack = null)
     {
+        pfManager.GetShowFriends();
+
         panel.SetActive(true);
         playerCallback = callBack;
 

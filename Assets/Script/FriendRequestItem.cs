@@ -14,6 +14,8 @@ public class FriendRequestItem : MonoBehaviour
 
     public Button acceptButton, denyButton;
 
+    public float refreshTime, refreshTimer;
+
     // Start is called before the first frame update
     void Start()
     {

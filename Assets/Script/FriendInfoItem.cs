@@ -14,6 +14,8 @@ public class FriendInfoItem : MonoBehaviour
 
     public Button chatButton, unfriendButton;
 
+    public float refreshTime, refreshTimer;
+
     // Start is called before the first frame update
     void Start()
     {

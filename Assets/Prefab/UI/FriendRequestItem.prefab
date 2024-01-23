@@ -1122,6 +1122,8 @@ MonoBehaviour:
   friendID: 
   acceptButton: {fileID: 1502494931155916558}
   denyButton: {fileID: 6591396098177086344}
+  refreshTime: 10
+  refreshTimer: 0
 --- !u!1 &8495611887950897585
 GameObject:
   m_ObjectHideFlags: 0

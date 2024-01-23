@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Linq;
+using Photon.Pun;
 
 public class PlayFabUserMgtTMP : MonoBehaviour
 {
@@ -76,7 +77,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public GameObject moveUpTextPrefab;
     public Transform popupTextHolder;
 
-    static string mePlayerID;
+    public static string mePlayerID;
 
     public bool pendingColorSwitch = false;
     public Color pendingColor;
@@ -86,6 +87,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public GameObject friendInfoPrefab, friendReqPrefab;
 
     //bools
+    public bool isOffline = false;
     public bool loadingLeaderboard = false;
     public bool loadingPlayerData = false;
     public bool loadingDispName = false;
@@ -93,6 +95,13 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     //photon stuff
     public Player player;
+
+    public Launcher launcher;
+
+    public string GetPlayerID()
+    {
+        return mePlayerID;
+    }
 
     public void MakeScrollNotif(string textDisplayed, Color textColor)
     {
@@ -142,7 +151,6 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             PlayFabClientAPI.GetPlayerProfile(ProfileRequestParams, 
                                               result => {
                                                   loadingDispName = false;
-
                                                   dispname_field.text = result.PlayerProfile.DisplayName;
                                               },
                                               error => { });
@@ -907,6 +915,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                 }
             }
 
+            launcher.FindOnlinePlayers();
+
         }, OnErrorDefault);
     }
 
@@ -968,6 +978,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                     }, error => { });
                 }
             }
+
+            launcher.FindOnlinePlayers();
 
         }, OnErrorDefault);
     }
