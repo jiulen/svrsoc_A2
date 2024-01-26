@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Linq;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
@@ -11,9 +12,12 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public PlayFabUserMgtTMP pfManager;
 
-    Dictionary<int, Photon.Realtime.Player> onlinePlayers = new();
+    Photon.Realtime.Player[] onlinePlayers;
 
     public Transform friendsParent;
+
+    public GameObject friendNotifPrefab;
+    public Transform friendNotifParent;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +25,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         if (!isOffline)
         {
             Debug.Log(pfManager.GetPlayerID());
+            PhotonNetwork.NickName = pfManager.GetPlayerName();
             PhotonNetwork.AuthValues = new Photon.Realtime.AuthenticationValues();
             PhotonNetwork.AuthValues.UserId = pfManager.GetPlayerID();
             PhotonNetwork.ConnectUsingSettings();
@@ -32,9 +37,9 @@ public class Launcher : MonoBehaviourPunCallbacks
         if(!isOffline)
         {
             Debug.Log("Connected");
-            RoomOptions options = new RoomOptions { PlayerTtl = 100000, PublishUserId = true };
+            RoomOptions options = new RoomOptions { PublishUserId = true };
 
-            PhotonNetwork.JoinRandomOrCreateRoom(null, 0, MatchmakingMode.FillRoom, null, null, "NewRoom", options);
+            PhotonNetwork.JoinOrCreateRoom("NewRoom", options, TypedLobby.Default);
         }
     }
 
@@ -42,7 +47,6 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         if (!isOffline)
         {
-            Debug.Log("Joined");
             GameObject playerObj = PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
             playerObj.name = "Player (Me)";
             Player playerScript = playerObj.GetComponent<Player>();
@@ -60,21 +64,39 @@ public class Launcher : MonoBehaviourPunCallbacks
         base.OnPlayerEnteredRoom(newPlayer);
 
         FindOnlinePlayers();
+
+        CheckFriendNotif(newPlayer);
+    }
+
+    public void CheckFriendNotif(Photon.Realtime.Player newPlayer)
+    {
+        if (pfManager._friends.Any(friend => friend.FriendPlayFabId == newPlayer.UserId))
+        {
+            Debug.Log($"Player {newPlayer.NickName} has joined");
+            GameObject friendNotif = Instantiate(friendNotifPrefab);
+            friendNotif.transform.SetParent(friendNotifParent);
+            friendNotif.transform.localPosition = Vector3.zero;
+
+            var popupNotif = friendNotif.GetComponent<PopupNotif>();
+            popupNotif.SetText1(newPlayer.NickName);
+        }
     }
 
     public void FindOnlinePlayers()
     {
-        onlinePlayers = PhotonNetwork.CurrentRoom.Players;
+        onlinePlayers = PhotonNetwork.PlayerList;
 
         foreach (Transform child in friendsParent)
         {
             var info = child.GetComponent<FriendInfoItem>();
+
             if (info != null)
             {
                 bool foundPlayer = false;
+
                 foreach (var friendPlayer in onlinePlayers)
                 {
-                    if (friendPlayer.Value.UserId == info.friendID)
+                    if (friendPlayer.UserId == info.friendID)
                     {
                         foundPlayer = true;
                         break;
@@ -100,7 +122,7 @@ public class Launcher : MonoBehaviourPunCallbacks
                     bool foundPlayer = false;
                     foreach (var friendPlayer in onlinePlayers)
                     {
-                        if (friendPlayer.Value.UserId == req.friendID)
+                        if (friendPlayer.UserId == req.friendID)
                         {
                             foundPlayer = true;
                             break;
@@ -131,8 +153,12 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void PhotonLogout()
     {
-        PhotonNetwork.LeaveRoom(false);
         PhotonNetwork.Disconnect();
+    }
+
+    public override void OnLeftRoom()
+    {
+        base.OnLeftRoom();
     }
 
     // Update is called once per frame

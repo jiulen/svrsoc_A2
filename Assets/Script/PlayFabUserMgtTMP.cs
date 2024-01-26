@@ -98,6 +98,13 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     public Launcher launcher;
 
+    public static string dispName;
+
+    public string GetPlayerName()
+    {
+        return dispName;
+    }
+
     public string GetPlayerID()
     {
         return mePlayerID;
@@ -365,6 +372,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         else
             ForgetLoginInfo();
 
+        dispName = r.InfoResultPayload.PlayerProfile.DisplayName;
+
         SceneManager.LoadScene("Landing");
     }
     public void OnButtonLogin()
@@ -380,7 +389,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         var loginRequest = new LoginWithEmailAddressRequest
         {
             Email = loginNameEmail.text,
-            Password = loginPassword.text
+            Password = loginPassword.text,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
         PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, OnLoginScreenError);
     }
@@ -389,7 +402,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         var loginRequest = new LoginWithPlayFabRequest
         {
             Username = loginNameEmail.text,
-            Password = loginPassword.text
+            Password = loginPassword.text,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
         PlayFabClientAPI.LoginWithPlayFab(loginRequest, OnLoginSuccess, OnLoginScreenError);
     }
@@ -398,7 +415,11 @@ public class PlayFabUserMgtTMP : MonoBehaviour
         var req = new LoginWithCustomIDRequest
         {
             CustomId = SystemInfo.deviceUniqueIdentifier,
-            CreateAccount = true
+            CreateAccount = true,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
         PlayFabClientAPI.LoginWithCustomID(req, OnLoginSuccess, OnLoginScreenError);
     }

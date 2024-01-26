@@ -1368,6 +1368,42 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 141755507}
   m_CullTransparentMesh: 1
+--- !u!1 &142842708
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 142842709}
+  m_Layer: 5
+  m_Name: NotifSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &142842709
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 142842708}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1757999479}
+  m_RootOrder: 14
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -150}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0, y: 0}
 --- !u!1 &145929532
 GameObject:
   m_ObjectHideFlags: 0
@@ -10346,7 +10382,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &665199942
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23038,6 +23074,8 @@ MonoBehaviour:
   isOffline: 0
   pfManager: {fileID: 93469141}
   friendsParent: {fileID: 1977891383}
+  friendNotifPrefab: {fileID: 3399724531231586195, guid: 2d50511bac363ce4c8c9ddf56719567f, type: 3}
+  friendNotifParent: {fileID: 142842709}
 --- !u!4 &1589409627
 Transform:
   m_ObjectHideFlags: 0
@@ -24539,6 +24577,7 @@ RectTransform:
   - {fileID: 236311271}
   - {fileID: 676821143}
   - {fileID: 665199942}
+  - {fileID: 142842709}
   m_Father: {fileID: 0}
   m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
