@@ -71,7 +71,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     GameObject landingLoadingObj, gameLoadingObj;
 
     public List<FriendInfo> _friends = null;
-    List<FriendInfo> confirmedFriends = null;
+    public List<FriendInfo> confirmedFriends = null;
     List<string> confirmedIDs = null;
 
     public GameObject moveUpTextPrefab;
@@ -99,6 +99,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public Launcher launcher;
 
     public static string dispName;
+
+    [SerializeField] float updateFriendsTimer = 0, updateFriendsTime = 10;
 
     public string GetPlayerName()
     {
@@ -218,6 +220,13 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                     gettingCoins = false;
                 }
             }
+
+            updateFriendsTimer += Time.deltaTime;
+            if (updateFriendsTimer >= updateFriendsTime)
+            {
+                updateFriendsTimer = 0;
+                GetShowFriends();
+            }
         }
 
         if (landingLoadingObj != null)
@@ -318,6 +327,12 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             return;
         }
 
+        if (regisUsername.text.Contains(" "))
+        {
+            UpdateMsg("Username cannot contain spaces", regisTxt);
+            return;
+        }
+
         var registerRequest = new RegisterPlayFabUserRequest
         {
             Email = regisEmail.text,
@@ -351,7 +366,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             string GuestID;
 
             randGuestID = Random.Range(0, 10000);
-            GuestID = "Guest " + randGuestID.ToString("D4");
+            GuestID = "Guest" + randGuestID.ToString("D4");
 
             //To create a player display name (For guest login first time)
             var req = new UpdateUserTitleDisplayNameRequest
@@ -488,6 +503,16 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
         string newDispName = dispname_field.text;
 
+        if (newDispName.Contains(" "))
+        {
+            dispname_field.text = oldDispname;
+
+            dispname_error.color = Color.red;
+            dispname_error.text = "Display name cannot contain spaces";
+            StartCoroutine(ErrorTimer(1, dispname_error));
+            return;
+        }
+
         if (newDispName == oldDispname)
         {
             editDispnameButton.interactable = true;
@@ -514,8 +539,6 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                                                         }, 
                                                         error => {
                                                             dispname_field.text = oldDispname;
-
-                                                            if (player != null) player.SetDisplayNameID(oldDispname);
 
                                                             dispname_error.color = Color.red;
                                                             dispname_error.text = "Failed to change display name";
@@ -893,50 +916,48 @@ public class PlayFabUserMgtTMP : MonoBehaviour
             }
 
             _friends = result.Friends;
-            foreach (FriendInfo friend in _friends)
+            //filter friends by "confirmed" tag
+            confirmedFriends = _friends.FindAll(friend => friend.Tags.Contains("confirmed"));
+            foreach (FriendInfo friend in confirmedFriends)
             {
-                if (friend.Tags.Contains("confirmed"))
+                GameObject newItem = Instantiate(friendInfoPrefab);
+                FriendInfoItem newFriendInfoItem = newItem.GetComponent<FriendInfoItem>();
+
+                newItem.transform.SetParent(friendsParent);
+                newItem.transform.localPosition = Vector3.zero;
+
+                newFriendInfoItem.playerName.text = friend.TitleDisplayName;
+                newFriendInfoItem.xp.text = "LVL ?";
+                newFriendInfoItem.status.text = "Unknown";
+                newFriendInfoItem.status.color = Color.gray;
+                newFriendInfoItem.friendID = friend.FriendPlayFabId;
+
+                var getDataReq = new GetUserDataRequest()
                 {
-                    GameObject newItem = Instantiate(friendInfoPrefab);
-                    FriendInfoItem newFriendInfoItem = newItem.GetComponent<FriendInfoItem>();
-
-                    newItem.transform.SetParent(friendsParent);
-                    newItem.transform.localPosition = Vector3.zero;
-
-                    newFriendInfoItem.playerName.text = friend.TitleDisplayName;
-                    newFriendInfoItem.xp.text = "LVL ?";
-                    newFriendInfoItem.status.text = "Unknown";
-                    newFriendInfoItem.status.color = Color.gray;
-                    newFriendInfoItem.friendID = friend.FriendPlayFabId;
-
-                    var getDataReq = new GetUserDataRequest()
+                    PlayFabId = friend.FriendPlayFabId
+                };
+                PlayFabClientAPI.GetUserData(getDataReq
+                , result =>
+                {
+                    if (newFriendInfoItem != null)
                     {
-                        PlayFabId = friend.FriendPlayFabId
-                    };
-                    PlayFabClientAPI.GetUserData(getDataReq
-                    , result =>
-                    {
-                        if (newFriendInfoItem != null)
+                        if (result.Data == null || !result.Data.ContainsKey("Level"))
                         {
-                            if (result.Data == null || !result.Data.ContainsKey("Level"))
+                            newFriendInfoItem.xp.text = "LVL " + 0;
+                        }
+                        else
+                        {
+                            if (int.TryParse(result.Data["Level"].Value, out curLevel))
                             {
-                                newFriendInfoItem.xp.text = "LVL " + 0;
+                                newFriendInfoItem.xp.text = "LVL " + curLevel;
                             }
                             else
                             {
-                                if (int.TryParse(result.Data["Level"].Value, out curLevel))
-                                {
-                                    newFriendInfoItem.xp.text = "LVL " + curLevel;
-                                }
-                                else
-                                {
-                                    newFriendInfoItem.xp.text = "LVL ?";
-                                }
+                                newFriendInfoItem.xp.text = "LVL ?";
                             }
                         }
-                    }, error => { });
-
-                }
+                    }
+                }, error => { });
             }
 
             launcher.FindOnlinePlayers();

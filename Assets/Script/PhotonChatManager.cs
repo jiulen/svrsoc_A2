@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using ExitGames.Client.Photon;
 using TMPro;
+using System.Linq;
 
 public class PhotonChatManager : MonoBehaviour, IChatClientListener
 {
@@ -39,6 +40,8 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
     string currentChat;
     [SerializeField] TMP_InputField chatField;
     [SerializeField] TMP_Text chatDisplay;
+
+    public PlayFabUserMgtTMP pfManager;
     // Start is called before the first frame update
     void Start()
     {
@@ -53,6 +56,7 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
     }
     public void OnTextChange()
     {
+        privateReceiver = "";
         currentChat = chatField.text;
 
         if (chatField.text.EndsWith("\n"))
@@ -61,10 +65,65 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
 
             if (currentChat != "")
             {
+                //check if pming
+                string[] splitChat = currentChat.Split(" ");
+                if (splitChat.Length == 1)
+                {
+                    if (splitChat[0] == "/pm") //trying to pm with no message
+                    {
+                        OnGetError("Message target not found");
+                        chatField.text = "";
+                        currentChat = "";
+                        return;
+                    }
+                }
+                if (splitChat.Length == 2)
+                {
+                    if (splitChat[0] == "/pm") //trying to pm with no message
+                    {
+                        OnGetError("Cannot have empty message");
+                        chatField.text = "";
+                        currentChat = "";
+                        return;
+                    }
+                }
+                else if (splitChat.Length > 2)
+                {
+                    if (splitChat[0] == "/pm") //trying to pm
+                    {
+                        string targetName = splitChat[1];
+                        if (pfManager.confirmedFriends.Any(friend => friend.TitleDisplayName == targetName))
+                        {
+                            privateReceiver = targetName;
+                            currentChat = string.Join(" ", splitChat, 2, splitChat.Length - 2);
+                            Debug.Log("Check:" + currentChat);
+                        }
+                        else //trying to pm a non-friend
+                        {
+                            OnGetError("Cannot private message " + targetName);
+                            chatField.text = "";
+                            currentChat = "";
+                            return;
+                        }
+                    }
+                }
+
                 SubmitPublicChatOnClick();
                 SubmitPrivateChatOnClick();
             }
+            else //no message
+            {
+                OnGetError("Cannot have empty message");
+                chatField.text = "";
+                currentChat = "";
+            }
         }
+    }
+    public void OnGetError(string message)
+    {
+        string msg = string.Format("<color=#FF0000>(System) : {0}<color=#FF0000>", message);
+        chatDisplay.text += "\n" + msg;
+        Debug.Log(msg);
     }
     #endregion General
     #region PublicChat
@@ -119,7 +178,7 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
         string msgs = "";
         for (int i = 0; i < senders.Length; i++)
         {
-            msgs = string.Format("{0}: {1}", senders[i], messages[i]);
+            msgs = string.Format("<color=#000000>{0}: {1}<color=#000000>", senders[i], messages[i]);
             chatDisplay.text += "\n" + msgs;
             Debug.Log(msgs);
         }
@@ -127,8 +186,8 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
     public void OnPrivateMessage(string sender, object message, string channelName)
     {
         string msgs = "";
-        msgs = string.Format("(Private) {0}: {1}", sender, message);
-        chatDisplay.text += "\n " + msgs;
+        msgs = string.Format("<color=#FFFF00>(Private) {0}: {1}<color=#FFFF00>", sender, message);
+        chatDisplay.text += "\n" + msgs;
         Debug.Log(msgs);
 
     }
@@ -138,7 +197,6 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
     }
     public void OnSubscribed(string[] channels, bool[] results)
     {
-        Debug.Log("sus");
         chatPanel.SetActive(true);
     }
     public void OnUnsubscribed(string[] channels)

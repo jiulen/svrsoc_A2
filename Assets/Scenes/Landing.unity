@@ -818,6 +818,7 @@ MonoBehaviour:
   landingLoadingObj: {fileID: 665199941}
   gameLoadingObj: {fileID: 0}
   _friends: []
+  confirmedFriends: []
   moveUpTextPrefab: {fileID: 2738692183049770539, guid: 9929fd44291c8ee44824ed267c46a387, type: 3}
   popupTextHolder: {fileID: 676821143}
   pendingColorSwitch: 0
@@ -832,6 +833,8 @@ MonoBehaviour:
   loadingMOTD: 0
   player: {fileID: 0}
   launcher: {fileID: 1589409626}
+  updateFriendsTimer: 0
+  updateFriendsTime: 10
 --- !u!1 &95067602
 GameObject:
   m_ObjectHideFlags: 0
@@ -23908,6 +23911,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2906618124714521382, guid: 789c762bd8906fe428aac1eaccff043f, type: 3}
+      propertyPath: pfManager
+      value: 
+      objectReference: {fileID: 93469141}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 789c762bd8906fe428aac1eaccff043f, type: 3}
 --- !u!114 &1681827828 stripped
