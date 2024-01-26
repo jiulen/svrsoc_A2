@@ -19,6 +19,8 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject friendNotifPrefab;
     public Transform friendNotifParent;
 
+    public PhotonChatManager chatManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +32,13 @@ public class Launcher : MonoBehaviourPunCallbacks
             PhotonNetwork.AuthValues.UserId = pfManager.GetPlayerID();
             PhotonNetwork.ConnectUsingSettings();
         }
+    }
+
+    public void ChangePlayerName()
+    {
+        PhotonNetwork.NickName = pfManager.GetPlayerName();
+        chatManager.UsernameOnValueChange(pfManager.GetPlayerName());
+        chatManager.ChangeChatUsername();
     }
 
     public override void OnConnectedToMaster()
@@ -56,6 +65,9 @@ public class Launcher : MonoBehaviourPunCallbacks
             pfManager.LoadPlayerInfo();
 
             FindOnlinePlayers();
+
+            chatManager.UsernameOnValueChange(pfManager.GetPlayerName());
+            chatManager.ChatConnect();
         }
     }
 

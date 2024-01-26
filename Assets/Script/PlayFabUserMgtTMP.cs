@@ -508,6 +508,9 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                                                             editDispnameButton.interactable = true;
 
                                                             if (player != null) player.SetDisplayNameID(newDispName);
+
+                                                            dispName = newDispName;
+                                                            launcher.ChangePlayerName();
                                                         }, 
                                                         error => {
                                                             dispname_field.text = oldDispname;
