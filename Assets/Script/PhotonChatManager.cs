@@ -125,6 +125,17 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
         chatDisplay.text += "\n" + msg;
         Debug.Log(msg);
     }
+    public void ChatSelected()
+    {
+        Debug.Log("select chat");
+        pfManager.openUI = true;
+    }
+    public void ChatDeselected()
+    {
+        Debug.Log("deselect chat");
+        pfManager.openUI = false;
+    }
+
     #endregion General
     #region PublicChat
     public void SubmitPublicChatOnClick()
