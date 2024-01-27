@@ -37,7 +37,7 @@ public class TradeController : MonoBehaviour
 
     PlayFabUserMgtTMP pfManager;
 
-    string currentTradeID;
+    public string currentTradeID;
 
     [SerializeField]
     Button sendButton, cancelButton;
@@ -210,6 +210,10 @@ public class TradeController : MonoBehaviour
             }
 
             //notify other client trade is cancelled
+            if (incomingTradeID != "")
+            {
+
+            }
         }
 
         incomingTradeID = "";
@@ -359,10 +363,11 @@ public class TradeController : MonoBehaviour
             PlayFabClientAPI.AcceptTrade(acceptTradeReq,
                 result =>
                 {
+                    //notify other client trade is accepted
+                    thisPlayer.TargetAcceptTrade(incomingTradePhotonID);
+
                     CloseTradePanel();
                     invenManager.GetPlayerInventory();
-
-                    //notify other client trade is accepted
                 },
                 error =>
                 {
@@ -547,16 +552,5 @@ public class TradeController : MonoBehaviour
                 infoText.text = "Failed to get trade";
                 infoText.color = Color.red;
             });
-    }
-
-    Photon.Realtime.Player FindPhotonPlayer()
-    {
-        foreach (var player in PhotonNetwork.PlayerList)
-        {
-            if (player.UserId == incomingTradePhotonID)
-                return player;
-        }
-
-        return null;
     }
 }

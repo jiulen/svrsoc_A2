@@ -63,6 +63,7 @@ public class Player : MonoBehaviourPunCallbacks
     public const string TRADE_PHOTON_ID = "TradePhotonID";
     public const string TRADE_RESULT = "TradeResult"; //0 is cancelled, 1 is accepted
     public const string TRADE_CANCELLED = "TradeCancelled"; //only trade owner can send to trade target
+    public const string TRADE_RESULT_PHOTON_ID = "TradeResultPhotonID"; //make sure only trade owner receives it
 
     public TradeController tradeController;
 
@@ -304,48 +305,80 @@ public class Player : MonoBehaviourPunCallbacks
     {
         base.OnPlayerPropertiesUpdate(targetPlayer, changedProps);
 
-        if (!photonView.IsMine && targetPlayer == photonView.Owner)
+        if (targetPlayer == photonView.Owner)
         {
-            if (changedProps.TryGetValue(PLAYER_NAME, out object newPlayerName))
+            if (!photonView.IsMine)
             {
-                playerName.text = (string)newPlayerName;
-                playerOptionsName.text = (string)newPlayerName;
-            }
-
-            if (changedProps.TryGetValue(PLAYER_ID, out object newPlayerID))
-            {
-                if ((string)newPlayerID != "")
+                if (changedProps.TryGetValue(PLAYER_NAME, out object newPlayerName))
                 {
-                    playfabPlayerID = (string)newPlayerID;
+                    playerName.text = (string)newPlayerName;
+                    playerOptionsName.text = (string)newPlayerName;
                 }
-            }
-        }
 
-        if (photonView.IsMine && targetPlayer == photonView.Owner)
-        {
-            if (changedProps.TryGetValue(TRADE_ID, out object tradeID))
-            {
-                tradeController.incomingTradeID = (string)tradeID;
-                
-                if (changedProps.TryGetValue(TRADE_PLAYER_ID, out object tradePlayerID))
+                if (changedProps.TryGetValue(PLAYER_ID, out object newPlayerID))
                 {
-                    tradeController.incomingTradingPlayerID = (string)tradePlayerID;
-
-                    if (changedProps.TryGetValue(TRADE_PHOTON_ID, out object tradePhotonID))
+                    if ((string)newPlayerID != "")
                     {
-                        tradeController.incomingTradePhotonID = (string)tradePhotonID;
-
-                        tradeController.ExamineTrade();
+                        playfabPlayerID = (string)newPlayerID;
                     }
                 }
             }
 
-            if (changedProps.TryGetValue(TRADE_CANCELLED, out object cancelled))
+            if (photonView.IsMine)
             {
-                bool tradeCancelled = (bool)cancelled;
-                if (tradeCancelled)
+                if (changedProps.TryGetValue(TRADE_ID, out object tradeID))
                 {
-                    tradeController.CloseTradePanel();
+                    tradeController.incomingTradeID = (string)tradeID;
+
+                    if (changedProps.TryGetValue(TRADE_PLAYER_ID, out object tradePlayerID))
+                    {
+                        tradeController.incomingTradingPlayerID = (string)tradePlayerID;
+
+                        if (changedProps.TryGetValue(TRADE_PHOTON_ID, out object tradePhotonID))
+                        {
+                            tradeController.incomingTradePhotonID = (string)tradePhotonID;
+
+                            tradeController.ExamineTrade();
+                        }
+                    }
+                }
+
+                if (changedProps.TryGetValue(TRADE_CANCELLED, out object cancelled))
+                {
+                    bool tradeCancelled = (bool)cancelled;
+                    if (tradeCancelled)
+                    {
+                        tradeController.CloseTradePanel();
+                    }
+                }
+            }
+
+            if (changedProps.TryGetValue(TRADE_RESULT, out object result))
+            {
+                if (changedProps.TryGetValue(TRADE_RESULT_PHOTON_ID, out object resultPhotonID))
+                {
+                    string photonID = (string)resultPhotonID;
+                    Photon.Realtime.Player tradeOwner = FindPhotonPlayer(photonID);
+
+                    if (tradeOwner != null)
+                    {
+                        if (tradeOwner.IsLocal)
+                        {
+                            int tradeResult = (int)result;
+
+                            if (tradeResult == 0)
+                            {
+                                Debug.Log("target cancelled");
+                            }
+                            else if (tradeResult == 1)
+                            {
+                                Debug.Log("target accepted");
+                                tradeController.currentTradeID = "";
+                                tradeController.CloseTradePanel();
+                                invenManager.GetPlayerInventory();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -404,5 +437,28 @@ public class Player : MonoBehaviourPunCallbacks
     {
         ExitGames.Client.Photon.Hashtable playerProps = new() { { TRADE_CANCELLED, true } };
         photonView.Owner.SetCustomProperties(playerProps);
+    }
+
+    public void TargetCancelTrade(string photonID)
+    {
+        ExitGames.Client.Photon.Hashtable playerProps = new() { { TRADE_RESULT, 0 }, { TRADE_RESULT_PHOTON_ID, photonID } };
+        photonView.Owner.SetCustomProperties(playerProps);
+    }
+
+    public void TargetAcceptTrade(string photonID)
+    {
+        ExitGames.Client.Photon.Hashtable playerProps = new() { { TRADE_RESULT, 1 }, { TRADE_RESULT_PHOTON_ID, photonID} };
+        photonView.Owner.SetCustomProperties(playerProps);
+    }
+
+    public Photon.Realtime.Player FindPhotonPlayer(string photonID)
+    {
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.UserId == photonID)
+                return player;
+        }
+
+        return null;
     }
 }
