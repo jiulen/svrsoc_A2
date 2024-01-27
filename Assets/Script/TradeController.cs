@@ -212,7 +212,7 @@ public class TradeController : MonoBehaviour
             //notify other client trade is cancelled
             if (incomingTradeID != "")
             {
-
+                thisPlayer.TargetCancelTrade(incomingTradePhotonID);
             }
         }
 

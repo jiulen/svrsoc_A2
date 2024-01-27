@@ -369,10 +369,10 @@ public class Player : MonoBehaviourPunCallbacks
                             if (tradeResult == 0)
                             {
                                 Debug.Log("target cancelled");
+                                tradeController.CloseTradePanel();
                             }
                             else if (tradeResult == 1)
                             {
-                                Debug.Log("target accepted");
                                 tradeController.currentTradeID = "";
                                 tradeController.CloseTradePanel();
                                 invenManager.GetPlayerInventory();
