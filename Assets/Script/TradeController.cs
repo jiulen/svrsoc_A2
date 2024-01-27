@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using PlayFab.ClientModels;
 using PlayFab;
 using TMPro;
+using Photon.Pun;
 
 public class TradeController : MonoBehaviour
 {
@@ -42,7 +43,11 @@ public class TradeController : MonoBehaviour
     Button sendButton, cancelButton;
 
     [SerializeField]
-    TMP_Text sendBtnText;
+    TMP_Text sendBtnText, cancelBtnText;
+
+    public GameObject blocker;
+
+    public string incomingTradeID, incomingTradingPlayerID, incomingTradePhotonID;
 
     // Start is called before the first frame update
     void Awake()
@@ -172,16 +177,35 @@ public class TradeController : MonoBehaviour
 
         ResetTradePanel();
         ResetReqPanel();
+
+        blocker.SetActive(false);
+
+        pfManager.openUI = true;
+
+        cancelBtnText.text = "Cancel";
     }
 
     public void CloseTradePanel() //also cancels trade if possible
     {
-        gameObject.SetActive(false);
-
         if (currentTradeID != "")
         {
             CancelTradeRequest();
+
+            cancelButton.interactable = false;
+            cancelBtnText.text = "Cancelling";
         }
+        else
+        {
+            gameObject.SetActive(false);
+            if (!thisPlayer.optionsPanel.activeSelf)
+            {
+                pfManager.openUI = false;
+            }
+        }
+
+        incomingTradeID = "";
+        incomingTradingPlayerID = "";
+        incomingTradePhotonID = "";
     }
 
     public void ResetTradePanel()
@@ -329,6 +353,10 @@ public class TradeController : MonoBehaviour
                 currentTradeID = result.Trade.TradeId;
 
                 cancelButton.interactable = true;
+
+                thisPlayer.SendTrade(currentTradeID, pfManager.GetPlayerID(), PhotonNetwork.LocalPlayer.UserId);
+
+                blocker.SetActive(true);
             }, 
             error =>
             {
@@ -337,8 +365,7 @@ public class TradeController : MonoBehaviour
                 sendButton.interactable = true;
                 cancelButton.interactable = true;
 
-                Debug.Log(error.GenerateErrorReport());
-                Debug.Log(error.Error);
+                OnError(error);
             });
     }
 
@@ -352,12 +379,73 @@ public class TradeController : MonoBehaviour
             result =>
             {
                 Debug.Log("Trade cancelled");
-            }, OnError);
+
+                gameObject.SetActive(false);
+                if (!thisPlayer.optionsPanel.activeSelf)
+                {
+                    pfManager.openUI = false;
+                }
+            }, 
+            error =>
+            {
+                cancelBtnText.text = "Cancel";
+                cancelButton.interactable = true;
+
+                OnError(error);
+            });
     }
 
     void OnError(PlayFabError e)
     {
         Debug.Log(e.GenerateErrorReport());
         Debug.Log(e.Error);
+    }
+
+    public void ExamineTrade()
+    {
+        var checkTradeReq = new GetTradeStatusRequest
+        {
+            OfferingPlayerId = incomingTradingPlayerID,
+            TradeId = incomingTradeID
+        };
+
+        PlayFabClientAPI.GetTradeStatus(checkTradeReq,
+            result =>
+            {
+                OpenTradePanel();
+
+                sendBtnText.text = "Accept";
+                blocker.SetActive(true); //dont let user interact with incoming trade
+
+                List<string> offers = result.Trade.OfferedCatalogItemIds;
+                List<string> requests = result.Trade.RequestedCatalogItemIds;
+
+                for (int i = 0; i < offers.Count; ++i)
+                {
+                    tradeReqItems[i].SetInfo(offers[i]);
+                    tradeReqItems[i].EnableImage(true);
+                }
+
+                for (int i = 0; i < requests.Count; ++i)
+                {
+                    tradeOfferItems[i].SetInfo(requests[i]);
+                    tradeOfferItems[i].EnableImage(true);
+                }
+            },
+            error =>
+            {
+                OnError(error);
+            });
+    }
+
+    Photon.Realtime.Player FindPhotonPlayer()
+    {
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.UserId == incomingTradePhotonID)
+                return player;
+        }
+
+        return null;
     }
 }

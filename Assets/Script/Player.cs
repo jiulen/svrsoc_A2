@@ -58,6 +58,9 @@ public class Player : MonoBehaviourPunCallbacks
     //strings
     public const string PLAYER_NAME = "PlayerName";
     public const string PLAYER_ID = "PlayerID";
+    public const string TRADE_PLAYER_ID = "TradePlayerID";
+    public const string TRADE_ID = "TradeID";
+    public const string TRADE_PHOTON_ID = "TradePhotonID";
 
     public TradeController tradeController;
 
@@ -108,7 +111,6 @@ public class Player : MonoBehaviourPunCallbacks
 
         tradeButton.onClick.AddListener(() =>
         {
-            Debug.Log("tradeReq");
             tradeController.OpenTradePanel();
         });
     }
@@ -316,6 +318,28 @@ public class Player : MonoBehaviourPunCallbacks
                 }
             }
         }
+
+        if (photonView.IsMine && targetPlayer == photonView.Owner)
+        {
+            if (changedProps.TryGetValue(TRADE_ID, out object tradeID))
+            {
+                tradeController.incomingTradeID = (string)tradeID;
+                
+                if (changedProps.TryGetValue(TRADE_PLAYER_ID, out object tradePlayerID))
+                {
+                    tradeController.incomingTradingPlayerID = (string)tradePlayerID;
+
+                    if (changedProps.TryGetValue(TRADE_PHOTON_ID, out object tradePhotonID))
+                    {
+                        tradeController.incomingTradePhotonID = (string)tradePhotonID;
+
+                        tradeController.ExamineTrade();
+                    }
+                }
+            }
+
+            
+        }
     }
 
     [PunRPC]
@@ -359,5 +383,11 @@ public class Player : MonoBehaviourPunCallbacks
                 addFriendButton.interactable = false;
             }
         }
+    }
+
+    public void SendTrade(string tradeID, string tradingPlayerID, string tradePhotonID)
+    {
+        ExitGames.Client.Photon.Hashtable playerProps = new() { { TRADE_ID, tradeID }, { TRADE_PLAYER_ID, tradingPlayerID} , { TRADE_PHOTON_ID, tradePhotonID} };
+        photonView.Owner.SetCustomProperties(playerProps);
     }
 }
