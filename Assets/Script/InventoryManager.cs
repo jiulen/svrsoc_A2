@@ -31,6 +31,10 @@ public class InventoryManager : MonoBehaviour
 
     [SerializeField] PlayFabUserMgtTMP pfManager;
 
+    //Trading
+    public bool loadingTradeInventory = false;
+
+
     void UpdateMsg()
     {
 
@@ -162,5 +166,26 @@ public class InventoryManager : MonoBehaviour
             {
                 pfManager.MakeScrollNotif("Failed to consume " + itemName, Color.red);
             });
+    }
+
+    //Trading
+
+    public void GetPlayerTradeInventory()
+    {
+        loadingTradeInventory = true;
+        invenItems.Clear();
+
+        var UserInv = new GetUserInventoryRequest();
+        PlayFabClientAPI.GetUserInventory(UserInv,
+            result =>
+            {
+                invenItems = result.Inventory;
+                loadingTradeInventory = false;
+            }, OnError);
+    }
+
+    public void OpenTradeRequest()
+    {
+
     }
 }

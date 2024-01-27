@@ -12,7 +12,7 @@ public class FriendInfoItem : MonoBehaviour
 
     public string friendID;
 
-    public Button chatButton, unfriendButton;
+    public Button unfriendButton;
 
     public float refreshTime, refreshTimer;
 
@@ -20,12 +20,6 @@ public class FriendInfoItem : MonoBehaviour
     void Start()
     {
         pfManager = GameObject.Find("PFManager").GetComponent<PlayFabUserMgtTMP>();
-
-        //buttons
-        chatButton.onClick.AddListener(() =>
-        {
-            Debug.Log("open chat");
-        });
 
         unfriendButton.onClick.AddListener(() =>
         {

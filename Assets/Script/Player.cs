@@ -59,6 +59,8 @@ public class Player : MonoBehaviourPunCallbacks
     public const string PLAYER_NAME = "PlayerName";
     public const string PLAYER_ID = "PlayerID";
 
+    public TradeController tradeController;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -107,6 +109,7 @@ public class Player : MonoBehaviourPunCallbacks
         tradeButton.onClick.AddListener(() =>
         {
             Debug.Log("tradeReq");
+            tradeController.OpenTradePanel();
         });
     }
 
