@@ -75,6 +75,9 @@ public class TradeController : MonoBehaviour
         {
             if (itemInstance.ItemId != "BU1") //hide bundle obj
             {
+                if (!invenManager.catalogMap[itemInstance.ItemId].IsTradable)
+                    continue;
+
                 int? uses = itemInstance.RemainingUses;
 
                 if (uses == null)
@@ -137,6 +140,9 @@ public class TradeController : MonoBehaviour
         {
             if (catItem.Key != "BU1") //hide bundle obj
             {
+                if (!catItem.Value.IsTradable)
+                    continue;
+
                 GameObject newItem = Instantiate(tradeReqItemPrefab);
                 TradeReqShopItem newTradeReqShopItem = newItem.GetComponent<TradeReqShopItem>();
 
@@ -285,10 +291,20 @@ public class TradeController : MonoBehaviour
         List<string> offerItems = new();
         foreach (var item in tradeOfferItems)
         {
+            if (item.invenInstID == "")
+                continue;
+
             offerItems.Add(item.invenInstID);
         }
 
         List<string> requestItems = new();
+        foreach (var item in tradeReqItems)
+        {
+            if (item.invenID == "")
+                continue;
+
+            offerItems.Add(item.invenID);
+        }
 
         OpenTradeRequest(thisPlayer.playfabPlayerID, offerItems, requestItems);
     }
