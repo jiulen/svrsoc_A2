@@ -2231,6 +2231,7 @@ MonoBehaviour:
   - {fileID: 4842807063411546457}
   - {fileID: 4404217629336803276}
   - {fileID: 4801606329698572462}
+  currentTradeID: 
   sendButton: {fileID: 1340110462711232526}
   cancelButton: {fileID: 6533060117724883738}
   sendBtnText: {fileID: 3560910145419518065}
