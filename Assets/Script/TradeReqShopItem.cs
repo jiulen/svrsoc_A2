@@ -4,12 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class TradeOfferItem : MonoBehaviour
+public class TradeReqShopItem : MonoBehaviour
 {
     public Image itemImage;
 
-    public string invenID;
-    public string invenInstID;
+    public string itemID;
+
+    public TradeController tradeController;
 
     public void SetInfo(string itemIDStr)
     {
@@ -29,20 +30,18 @@ public class TradeOfferItem : MonoBehaviour
             case "P2":
                 itemSprite = Resources.Load<Sprite>("greenPotion");
                 break;
+            case "BU1":
+                itemSprite = Resources.Load<Sprite>("potionsBundle");
+                break;
         }
-        invenID = itemIDStr;
+
         itemImage.sprite = itemSprite;
+
+        itemID = itemIDStr;
     }
 
-    public void EnableImage(bool enable)
+    public void OnItemSelected()
     {
-        itemImage.enabled = enable;
-    }
-
-    public void DeleteItem()
-    {
-        itemImage.enabled = false;
-        invenID = "";
-        invenInstID = "";
+        tradeController.SelectTradeReqItem(itemID, itemImage.sprite);
     }
 }

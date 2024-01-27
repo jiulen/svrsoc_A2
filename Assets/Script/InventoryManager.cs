@@ -184,8 +184,5 @@ public class InventoryManager : MonoBehaviour
             }, OnError);
     }
 
-    public void OpenTradeRequest()
-    {
-
-    }
+    
 }

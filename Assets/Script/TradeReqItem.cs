@@ -4,12 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class TradeOfferItem : MonoBehaviour
+public class TradeReqItem : MonoBehaviour
 {
     public Image itemImage;
 
     public string invenID;
-    public string invenInstID;
 
     public void SetInfo(string itemIDStr)
     {
@@ -43,6 +42,5 @@ public class TradeOfferItem : MonoBehaviour
     {
         itemImage.enabled = false;
         invenID = "";
-        invenInstID = "";
     }
 }
