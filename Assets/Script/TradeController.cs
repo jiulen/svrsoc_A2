@@ -431,6 +431,8 @@ public class TradeController : MonoBehaviour
             {
                 Debug.Log("Trade cancelled");
 
+                thisPlayer.OwnerCancelTrade();
+
                 gameObject.SetActive(false);
                 if (!thisPlayer.optionsPanel.activeSelf)
                 {

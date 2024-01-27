@@ -61,6 +61,8 @@ public class Player : MonoBehaviourPunCallbacks
     public const string TRADE_PLAYER_ID = "TradePlayerID";
     public const string TRADE_ID = "TradeID";
     public const string TRADE_PHOTON_ID = "TradePhotonID";
+    public const string TRADE_RESULT = "TradeResult"; //0 is cancelled, 1 is accepted
+    public const string TRADE_CANCELLED = "TradeCancelled"; //only trade owner can send to trade target
 
     public TradeController tradeController;
 
@@ -338,7 +340,14 @@ public class Player : MonoBehaviourPunCallbacks
                 }
             }
 
-            
+            if (changedProps.TryGetValue(TRADE_CANCELLED, out object cancelled))
+            {
+                bool tradeCancelled = (bool)cancelled;
+                if (tradeCancelled)
+                {
+                    tradeController.CloseTradePanel();
+                }
+            }
         }
     }
 
@@ -388,6 +397,12 @@ public class Player : MonoBehaviourPunCallbacks
     public void SendTrade(string tradeID, string tradingPlayerID, string tradePhotonID)
     {
         ExitGames.Client.Photon.Hashtable playerProps = new() { { TRADE_ID, tradeID }, { TRADE_PLAYER_ID, tradingPlayerID} , { TRADE_PHOTON_ID, tradePhotonID} };
+        photonView.Owner.SetCustomProperties(playerProps);
+    }
+
+    public void OwnerCancelTrade()
+    {
+        ExitGames.Client.Photon.Hashtable playerProps = new() { { TRADE_CANCELLED, true } };
         photonView.Owner.SetCustomProperties(playerProps);
     }
 }
