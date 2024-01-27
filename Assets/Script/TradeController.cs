@@ -49,6 +49,10 @@ public class TradeController : MonoBehaviour
 
     public string incomingTradeID, incomingTradingPlayerID, incomingTradePhotonID;
 
+    List<string> incomingTradeSendItemIDs = new();
+
+    public TMP_Text infoText;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -183,6 +187,9 @@ public class TradeController : MonoBehaviour
         pfManager.openUI = true;
 
         cancelBtnText.text = "Cancel";
+
+        infoText.text = "";
+        infoText.color = Color.black;
     }
 
     public void CloseTradePanel() //also cancels trade if possible
@@ -201,6 +208,8 @@ public class TradeController : MonoBehaviour
             {
                 pfManager.openUI = false;
             }
+
+            //notify other client trade is cancelled
         }
 
         incomingTradeID = "";
@@ -312,25 +321,61 @@ public class TradeController : MonoBehaviour
 
     public void SendTradeReq()
     {
-        List<string> offerItems = new();
-        foreach (var item in tradeOfferItems)
+        if (incomingTradeID == "")
         {
-            if (item.invenInstID == "")
-                continue;
+            List<string> offerItems = new();
+            foreach (var item in tradeOfferItems)
+            {
+                if (item.invenInstID == "")
+                    continue;
 
-            offerItems.Add(item.invenInstID);
+                offerItems.Add(item.invenInstID);
+            }
+
+            List<string> requestItems = new();
+            foreach (var item in tradeReqItems)
+            {
+                if (item.invenID == "")
+                    continue;
+
+                requestItems.Add(item.invenID);
+            }
+
+            OpenTradeRequest(thisPlayer.playfabPlayerID, offerItems, requestItems);
         }
-
-        List<string> requestItems = new();
-        foreach (var item in tradeReqItems)
+        else
         {
-            if (item.invenID == "")
-                continue;
+            var acceptTradeReq = new AcceptTradeRequest
+            {
+                OfferingPlayerId = incomingTradingPlayerID,
+                TradeId = incomingTradeID,
+                AcceptedInventoryInstanceIds = incomingTradeSendItemIDs
+            };
 
-            offerItems.Add(item.invenID);
+            sendButton.interactable = false;
+            cancelButton.interactable = false;
+            sendBtnText.text = "Accepting";
+
+            PlayFabClientAPI.AcceptTrade(acceptTradeReq,
+                result =>
+                {
+                    CloseTradePanel();
+                    invenManager.GetPlayerInventory();
+
+                    //notify other client trade is accepted
+                },
+                error =>
+                {
+                    OnError(error);
+
+                    infoText.text = "Failed to accept trade";
+                    infoText.color = Color.red;
+
+                    sendButton.interactable = true;
+                    cancelButton.interactable = true;
+                    sendBtnText.text = "Accept";
+                });
         }
-
-        OpenTradeRequest(thisPlayer.playfabPlayerID, offerItems, requestItems);
     }
 
     public void OpenTradeRequest(string targetID, List<string> offerItems, List<string> requestItems)
@@ -357,6 +402,9 @@ public class TradeController : MonoBehaviour
                 thisPlayer.SendTrade(currentTradeID, pfManager.GetPlayerID(), PhotonNetwork.LocalPlayer.UserId);
 
                 blocker.SetActive(true);
+
+                infoText.text = "Waiting for player to accept trade";
+                infoText.color = Color.black;
             }, 
             error =>
             {
@@ -366,6 +414,9 @@ public class TradeController : MonoBehaviour
                 cancelButton.interactable = true;
 
                 OnError(error);
+
+                infoText.text = "Failed to send trade request";
+                infoText.color = Color.red;
             });
     }
 
@@ -392,6 +443,9 @@ public class TradeController : MonoBehaviour
                 cancelButton.interactable = true;
 
                 OnError(error);
+
+                infoText.text = "Failed to cancel trade request";
+                infoText.color = Color.red;
             });
     }
 
@@ -414,11 +468,16 @@ public class TradeController : MonoBehaviour
             {
                 OpenTradePanel();
 
+                //ui stuff
+
+                sendButton.interactable = false;
                 sendBtnText.text = "Accept";
                 blocker.SetActive(true); //dont let user interact with incoming trade
 
                 List<string> offers = result.Trade.OfferedCatalogItemIds;
                 List<string> requests = result.Trade.RequestedCatalogItemIds;
+
+                //show trade
 
                 for (int i = 0; i < offers.Count; ++i)
                 {
@@ -431,10 +490,60 @@ public class TradeController : MonoBehaviour
                     tradeOfferItems[i].SetInfo(requests[i]);
                     tradeOfferItems[i].EnableImage(true);
                 }
+
+                infoText.text = "Finding items to trade";
+                infoText.color = Color.black;
+
+                //try to get items to trade
+                var UserInv = new GetUserInventoryRequest();
+                PlayFabClientAPI.GetUserInventory(UserInv,
+                    result2 =>
+                    {
+                        List<ItemInstance> inventoryItems = result2.Inventory;
+                        incomingTradeSendItemIDs.Clear();
+
+                        foreach (ItemInstance itemInst in inventoryItems)
+                        {
+                            for (int i = 0; i < requests.Count; ++i)
+                            {
+                                if (itemInst.ItemId == requests[i])
+                                {
+                                    requests.RemoveAt(i);
+                                    incomingTradeSendItemIDs.Add(itemInst.ItemInstanceId);
+                                    continue;
+                                }
+                            }
+                        }
+
+                        if (requests.Count == 0)
+                        {
+                            sendButton.interactable = true;
+
+                            infoText.text = "";
+                            infoText.color = Color.black;
+                        }
+                        else
+                        {
+                            infoText.text = "Not enough items to trade";
+                            infoText.color = Color.red;
+                        }
+
+                    }, 
+                    error2 =>
+                    {
+                        infoText.text = "Failed to get inventory";
+                        infoText.color = Color.red;
+
+                        OnError(error2);
+                    });
+
             },
             error =>
             {
                 OnError(error);
+
+                infoText.text = "Failed to get trade";
+                infoText.color = Color.red;
             });
     }
 
