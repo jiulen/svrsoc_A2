@@ -15,6 +15,8 @@ public class GuildController : MonoBehaviour
 
     public GameObject loadingGuildListObj, loadingCurrentGuildObj;
 
+    public GameObject createGuildPanel;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -85,5 +87,10 @@ public class GuildController : MonoBehaviour
     void ShowCurrentGuild()
     {
 
+    }
+
+    public void ShowCreateGuildPanel(bool show)
+    {
+        createGuildPanel.SetActive(show);
     }
 }
