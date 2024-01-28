@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class GuildManager : MonoBehaviour
 {
+    public bool loadingGuildList = false;
+    public bool loadingCurrentGuild = false;
+
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
     public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();

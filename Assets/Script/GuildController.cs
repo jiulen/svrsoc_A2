@@ -13,6 +13,8 @@ public class GuildController : MonoBehaviour
     public PlayFabUserMgtTMP pfManager;
     public GuildManager guildManager;
 
+    public GameObject loadingGuildListObj, loadingCurrentGuildObj;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -45,7 +47,25 @@ public class GuildController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (guildManager.loadingGuildList && !loadingGuildListObj.activeSelf)
+        {
+            loadingGuildListObj.SetActive(true);
+        }
 
+        if (!guildManager.loadingGuildList && loadingGuildListObj.activeSelf)
+        {
+            loadingGuildListObj.SetActive(false);
+        }
+
+        if (guildManager.loadingCurrentGuild && !loadingCurrentGuildObj.activeSelf)
+        {
+            loadingCurrentGuildObj.SetActive(true);
+        }
+
+        if (!guildManager.loadingCurrentGuild && loadingCurrentGuildObj.activeSelf)
+        {
+            loadingCurrentGuildObj.SetActive(false);
+        }
     }
     public void OpenPanel(System.Action callBack = null)
     {
