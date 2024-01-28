@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class FriendsController : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class FriendsController : MonoBehaviour
     public Toggle friendsToggle, requestsToggle;
 
     public PlayFabUserMgtTMP pfManager;
+
+    public GameObject loadingFriendListObj, loadingFriendRequestsObj;
     
     // Start is called before the first frame update
     void Start()
@@ -44,7 +47,25 @@ public class FriendsController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (pfManager.loadingFriendList && !loadingFriendListObj.activeSelf)
+        {
+            loadingFriendListObj.SetActive(true);
+        }
 
+        if (!pfManager.loadingFriendList && loadingFriendListObj.activeSelf)
+        {
+            loadingFriendListObj.SetActive(false);
+        }
+
+        if (pfManager.loadingFriendRequests && !loadingFriendRequestsObj.activeSelf)
+        {
+            loadingFriendRequestsObj.SetActive(true);
+        }
+
+        if (!pfManager.loadingFriendRequests && loadingFriendRequestsObj.activeSelf)
+        {
+            loadingFriendRequestsObj.SetActive(false);
+        }
     }
     public void OpenPanel(System.Action callBack = null)
     {

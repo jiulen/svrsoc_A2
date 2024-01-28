@@ -7486,7 +7486,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: '- Icons8 (for button and other icons)
 
-    - Craftpix.net (for backgrounds)'
+    - Craftpix.net (for backgrounds)
+
+    -
+    IdleOn (for potion sprites)
+
+    - Info Gamer - Youtube (for Photon Chat)
+
+    -
+    ChatGPT'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9490575f6515052469aa5da909ec98fe, type: 2}
   m_sharedMaterial: {fileID: -4922061048251148366, guid: 9490575f6515052469aa5da909ec98fe, type: 2}

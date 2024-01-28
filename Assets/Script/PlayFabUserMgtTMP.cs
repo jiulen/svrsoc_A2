@@ -92,6 +92,8 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public bool loadingPlayerData = false;
     public bool loadingDispName = false;
     public bool loadingMOTD = false;
+    public bool loadingFriendList = false;
+    public bool loadingFriendRequests = false;
 
     //photon stuff
     public Player player;
@@ -904,11 +906,18 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     public void GetShowFriends()
     {
+        loadingFriendList = true;
+        foreach (Transform child in friendsParent)
+        {
+            Destroy(child.gameObject);
+        }
+
         PlayFabClientAPI.GetFriendsList(new GetFriendsListRequest
         {
             // ExternalPlatformFriends = false,
             // XboxToken = null
         }, result => {
+            loadingFriendList = false;
             //clear
             foreach (Transform child in friendsParent)
             {
@@ -967,11 +976,19 @@ public class PlayFabUserMgtTMP : MonoBehaviour
 
     public void GetFriendRequests()
     {
+        loadingFriendRequests = true;
+
+        foreach (Transform child in friendsParent)
+        {
+            Destroy(child.gameObject);
+        }
+
         PlayFabClientAPI.GetFriendsList(new GetFriendsListRequest
         {
             // ExternalPlatformFriends = false,
             // XboxToken = null
         }, result => {
+            loadingFriendRequests = false;
             //clear
             foreach (Transform child in friendsParent)
             {
