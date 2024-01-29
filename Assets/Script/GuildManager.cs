@@ -402,6 +402,7 @@ public class GuildManager : MonoBehaviour
                                     newGuildMemberItem.status.text = "Unknown";
                                     newGuildMemberItem.status.color = Color.gray;
                                     newGuildMemberItem.memberPlayfabID = playFabId;
+                                    newGuildMemberItem.memberEntityKey = member.Key;
 
                                     if (guildInfoObj.playerRole == "Owner" && playFabId != pfManager.GetPlayerID()) //cannot kick myself
                                     {
@@ -700,5 +701,34 @@ public class GuildManager : MonoBehaviour
             {
                 OnSharedError(error);
             });
+    }
+
+    public void OnKickMemberButtonClicked(EntityKey kickedEntityKey)
+    {
+        var req = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+        {
+            FunctionName = "KickMember",
+            FunctionParameter = new { groupkey = guildInfoObj.guildEntityKey, entitykey = kickedEntityKey }
+        };
+
+        PlayFabClientAPI.ExecuteCloudScript(req
+        , result =>
+        {
+            Debug.Log("Successfully kicked member");
+
+            if (result.Error != null)
+            {
+                Debug.Log(result.Error);
+                Debug.Log(result.Error.Message);
+                Debug.Log(result.Error.StackTrace);
+            }
+
+            ShowCurrentGuild();
+        }
+        , error =>
+        {
+            Debug.Log("Failed to kick member");
+            OnSharedError(error);
+        });
     }
 }

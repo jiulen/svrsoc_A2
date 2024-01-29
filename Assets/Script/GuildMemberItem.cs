@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using PlayFab.GroupsModels;
 using TMPro;
 
 public class GuildMemberItem : MonoBehaviour
@@ -13,6 +14,7 @@ public class GuildMemberItem : MonoBehaviour
     GuildManager guildManager;
 
     public string memberPlayfabID;
+    public EntityKey memberEntityKey;
 
     public Button kickButton;
 
@@ -26,7 +28,7 @@ public class GuildMemberItem : MonoBehaviour
 
         kickButton.onClick.AddListener(() =>
         {
-            
+            guildManager.OnKickMemberButtonClicked(memberEntityKey);
         });
     }
 
