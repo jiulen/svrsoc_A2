@@ -95,8 +95,8 @@ public class GuildController : MonoBehaviour
         playerCallback = callBack;
 
         guildInfoObj.gameObject.SetActive(false);
-        guildsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
-        currGuildToggle.targetGraphic.color = new Color(1, 1, 1);
+        guildsToggle.isOn = true;
+        currGuildToggle.isOn = false;
 
         guildManager.ShowGuildList();
     }

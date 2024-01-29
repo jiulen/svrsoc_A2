@@ -29,6 +29,8 @@ public class GuildManager : MonoBehaviour
 
     public Button openCreateGuildButton;
 
+    public PlayFabUserMgtTMP pfManager;
+
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
     public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
@@ -224,13 +226,7 @@ public class GuildManager : MonoBehaviour
                                     , result3 =>
                                     {
                                         Debug.Log("Successfully gotten member coins");
-                                        if (result3.Logs != null)
-                                        {
-                                            foreach (var log in result3.Logs)
-                                            {
-                                                Debug.Log(log.Message);
-                                            }
-                                        }
+
                                         Dictionary<string, object> dict = PlayFabSimpleJson.DeserializeObject<Dictionary<string, object>>(result3.FunctionResult.ToString());
                                         if (dict.TryGetValue("Coins", out object coinsObj))
                                         {
@@ -294,6 +290,9 @@ public class GuildManager : MonoBehaviour
 
     void DoListMembership(EntityKey entityKey)
     {
+        guildInfoObj.playerRole = "";
+        guildInfoObj.leaveButton.interactable = false;
+
         var request = new ListMembershipRequest { Entity = entityKey };
         PlayFabGroupsAPI.ListMembership(request,
             result =>
@@ -310,6 +309,7 @@ public class GuildManager : MonoBehaviour
                 else
                 {
                     var group = result.Groups[0]; //get first group player is in
+                    guildInfoObj.guildEntityKey = group.Group;
                     guildInfoObj.guildNameStr = group.GroupName;
                     guildInfoObj.guildName.text = group.GroupName;
 
@@ -363,6 +363,20 @@ public class GuildManager : MonoBehaviour
 
                                     var playFabId = member.Lineage["master_player_account"].Id;
 
+                                    if (playFabId == pfManager.GetPlayerID())
+                                    {
+                                        guildInfoObj.playerRole = role.RoleId;
+                                        if (guildInfoObj.playerRole == "Owner")
+                                        {
+                                            guildInfoObj.leaveButtonText.text = "Delete Guild";
+                                        }
+                                        else
+                                        {
+                                            guildInfoObj.leaveButtonText.text = "Leave Guild";
+                                        }
+                                        guildInfoObj.leaveButton.interactable = true;
+                                    }
+
                                     //get members info
                                     GameObject newItem = Instantiate(guildMemberItemPrefab);
                                     GuildMemberItem newGuildMemberItem = newItem.GetComponent<GuildMemberItem>();
@@ -392,13 +406,7 @@ public class GuildManager : MonoBehaviour
                                     , result3 =>
                                     {
                                         Debug.Log("Successfully gotten member coins");
-                                        if (result3.Logs != null)
-                                        {
-                                            foreach (var log in result3.Logs)
-                                            {
-                                                Debug.Log(log.Message);
-                                            }
-                                        }
+
                                         Dictionary<string, object> dict = PlayFabSimpleJson.DeserializeObject<Dictionary<string, object>>(result3.FunctionResult.ToString());
                                         if (dict.TryGetValue("Coins", out object coinsObj))
                                         {
@@ -593,13 +601,6 @@ public class GuildManager : MonoBehaviour
         , result =>
         {
             Debug.Log("Successfully joined guild");
-            if (result.Logs != null)
-            {
-                foreach (var log in result.Logs)
-                {
-                    Debug.Log(log.Message);
-                }
-            }
 
             guildController.guildsToggle.isOn = false;
             guildController.currGuildToggle.isOn = true;
@@ -609,5 +610,73 @@ public class GuildManager : MonoBehaviour
             Debug.Log("Failed to join guild");
             OnSharedError(error);
         });
+    }
+
+    public void OnLeaveButtonClicked()
+    {
+        if (guildInfoObj.playerRole == "Owner")
+        {
+            //delete group instead
+            var req = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+            {
+                FunctionName = "DeleteTitleGroup",
+                FunctionParameter = new { groupkey = guildInfoObj.guildEntityKey }
+            };
+
+            PlayFabClientAPI.ExecuteCloudScript(req
+            , result =>
+            {
+                Debug.Log("Successfully deleted group");
+
+                if (result.Error != null)
+                {
+                    Debug.Log(result.Error.StackTrace);
+                }
+
+                guildController.guildsToggle.isOn = true;
+                guildController.currGuildToggle.isOn = false;
+            }
+            , error =>
+            {
+                Debug.Log("Failed to delete group");
+                OnSharedError(error);
+            });
+        }
+        else
+        {
+            //leave group like normal
+            if (ownEntityKey.Id == "")
+            {
+                GetOwnEntityKey(ownKey =>
+                {
+                    LeaveGuild(ownKey);
+                });
+            }
+            else
+            {
+                LeaveGuild(ownEntityKey);
+            }
+            
+        }
+    }
+
+    void LeaveGuild(EntityKey playerEntityKey)
+    {
+        var leaveReq = new RemoveMembersRequest
+        {
+            Group = guildInfoObj.guildEntityKey,
+            Members = new List<EntityKey> { playerEntityKey }
+        };
+
+        PlayFabGroupsAPI.RemoveMembers(leaveReq,
+            result =>
+            {
+                guildController.guildsToggle.isOn = true;
+                guildController.currGuildToggle.isOn = false;
+            },
+            error =>
+            {
+                OnSharedError(error);
+            });
     }
 }

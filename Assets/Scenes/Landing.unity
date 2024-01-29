@@ -874,6 +874,9 @@ MonoBehaviour:
     Type: 
   guildNameStr: 
   guildTagStr: 
+  playerRole: 
+  leaveButton: {fileID: 1330717292}
+  leaveButtonText: {fileID: 216988263}
 --- !u!1001 &63673702
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2582,6 +2585,7 @@ MonoBehaviour:
     Type: 
   launcher: {fileID: 1589409626}
   openCreateGuildButton: {fileID: 1105224655}
+  pfManager: {fileID: 93469141}
 --- !u!1 &142842708
 GameObject:
   m_ObjectHideFlags: 0
@@ -23478,7 +23482,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1330717290}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 141755511}
+        m_TargetAssemblyTypeName: GuildManager, Assembly-CSharp
+        m_MethodName: OnLeaveButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1337940138
 GameObject:
   m_ObjectHideFlags: 0
