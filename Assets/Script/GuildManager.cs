@@ -31,6 +31,8 @@ public class GuildManager : MonoBehaviour
 
     public PlayFabUserMgtTMP pfManager;
 
+    List<GuildMemberItem> guildMemberItemList = new();
+
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
     public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
@@ -352,6 +354,8 @@ public class GuildManager : MonoBehaviour
                                 Destroy(child.gameObject);
                             }
 
+                            guildMemberItemList.Clear();
+
                             foreach (var role in result2.Members)
                             {
                                 memberCount += role.Members.Count;
@@ -369,6 +373,14 @@ public class GuildManager : MonoBehaviour
                                         if (guildInfoObj.playerRole == "Owner")
                                         {
                                             guildInfoObj.leaveButtonText.text = "Delete Guild";
+
+                                            foreach (var item in guildMemberItemList)
+                                            {
+                                                if (item.memberPlayfabID != playFabId)
+                                                {
+                                                    item.kickButton.gameObject.SetActive(true);
+                                                }
+                                            }
                                         }
                                         else
                                         {
@@ -380,6 +392,7 @@ public class GuildManager : MonoBehaviour
                                     //get members info
                                     GameObject newItem = Instantiate(guildMemberItemPrefab);
                                     GuildMemberItem newGuildMemberItem = newItem.GetComponent<GuildMemberItem>();
+                                    guildMemberItemList.Add(newGuildMemberItem);
 
                                     newItem.transform.SetParent(guildListContent);
                                     newItem.transform.localPosition = Vector3.zero;
@@ -389,6 +402,15 @@ public class GuildManager : MonoBehaviour
                                     newGuildMemberItem.status.text = "Unknown";
                                     newGuildMemberItem.status.color = Color.gray;
                                     newGuildMemberItem.memberPlayfabID = playFabId;
+
+                                    if (guildInfoObj.playerRole == "Owner" && playFabId != pfManager.GetPlayerID()) //cannot kick myself
+                                    {
+                                        newGuildMemberItem.kickButton.gameObject.SetActive(true);
+                                    }
+                                    else
+                                    {
+                                        newGuildMemberItem.kickButton.gameObject.SetActive(false);
+                                    }
 
                                     GetDisplayName(dispNameResult =>
                                     {

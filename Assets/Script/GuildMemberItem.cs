@@ -26,7 +26,7 @@ public class GuildMemberItem : MonoBehaviour
 
         kickButton.onClick.AddListener(() =>
         {
-            //pfManager.DenyFriendRequest(friendID, true);
+            
         });
     }
 
