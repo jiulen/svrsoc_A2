@@ -838,6 +838,7 @@ MonoBehaviour:
   landingLoadingObj: {fileID: 0}
   gameLoadingObj: {fileID: 2040610436}
   _friends: []
+  confirmedFriends: []
   moveUpTextPrefab: {fileID: 0}
   popupTextHolder: {fileID: 0}
   pendingColorSwitch: 0
@@ -850,7 +851,12 @@ MonoBehaviour:
   loadingPlayerData: 0
   loadingDispName: 0
   loadingMOTD: 0
+  loadingFriendList: 0
+  loadingFriendRequests: 0
   player: {fileID: 0}
+  launcher: {fileID: 0}
+  updateFriendsTimer: 0
+  updateFriendsTime: 10
 --- !u!4 &236692289
 Transform:
   m_ObjectHideFlags: 0
@@ -1379,6 +1385,7 @@ MonoBehaviour:
   moveUpTextPrefab: {fileID: 0}
   popupTextHolder: {fileID: 0}
   pfManager: {fileID: 0}
+  loadingTradeInventory: 0
 --- !u!4 &326759253
 Transform:
   m_ObjectHideFlags: 0

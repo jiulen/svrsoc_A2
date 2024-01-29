@@ -10,6 +10,7 @@ public class GuildManager : MonoBehaviour
 {
     public bool loadingGuildList = false;
     public bool loadingCurrentGuild = false;
+    public bool loadingGuildInfo = false;
 
     public TMP_InputField guildName_if, guildDesc_if, guildTag_if;
 
@@ -17,6 +18,11 @@ public class GuildManager : MonoBehaviour
 
     public Transform guildListContent;
     public GameObject guildListItemPrefab;
+
+    public GuildInfoObj guildInfoObj;
+    public GameObject guildMemberItemPrefab;
+
+    public EntityKey ownEntityKey = new() { Id = "", Type = ""};
 
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
@@ -38,32 +44,30 @@ public class GuildManager : MonoBehaviour
         Debug.LogError(error.GenerateErrorReport());
     }
 
-    public void ListGroups(EntityKey entityKey)
+    public void CreateGroupButtonClicked()
     {
-        var request = new ListMembershipRequest { Entity = entityKey };
-        PlayFabGroupsAPI.ListMembership(request, OnListGroups, OnSharedError);
-    }
-    private void OnListGroups(ListMembershipResponse response)
-    {
-        var prevRequest = (ListMembershipRequest)response.Request;
-        foreach (var pair in response.Groups)
+        if (ownEntityKey.Id == "")
         {
-            GroupNameById[pair.Group.Id] = pair.GroupName;
-            EntityGroupPairs.Add(new KeyValuePair<string, string>(prevRequest.Entity.Id, pair.Group.Id));
+            GetOwnEntityKey(result =>
+            {
+                DoCreateGroup(result);
+            });
+        }
+        else
+        {
+            DoCreateGroup(ownEntityKey);
         }
     }
 
-    public void CreateGroupButtonClicked()
+    void DoCreateGroup(EntityKey entityKey)
     {
-        GetOwnEntityKey(result => 
-        {
-            CreateGroup(guildName_if.text, result, guildDesc_if.text, guildTag_if.text);
-            guildController.ShowCreateGuildPanel(false);
-        });
+        CreateGroup(guildName_if.text, entityKey, guildDesc_if.text, guildTag_if.text);
+        guildController.ShowCreateGuildPanel(false);
     }
 
     public void CreateGroup(string groupName, EntityKey entityKey, string groupDesc, string groupTag)
     {
+        Debug.Log("test2 : " + entityKey);
         var data = new Dictionary<string, object>()
         {
             { "Description", groupDesc },
@@ -108,6 +112,7 @@ public class GuildManager : MonoBehaviour
     {
         loadingGuildList = true;
         guildListContent.gameObject.SetActive(false);
+        guildInfoObj.gameObject.SetActive(false);
 
         foreach (Transform child in guildListContent)
         {
@@ -219,22 +224,147 @@ public class GuildManager : MonoBehaviour
     public void ShowCurrentGuild()
     {
         loadingCurrentGuild = true;
+        loadingGuildInfo = true;
         guildListContent.gameObject.SetActive(false);
+        guildController.notinGuildObj.SetActive(false);
+        guildInfoObj.gameObject.SetActive(true);
 
         foreach (Transform child in guildListContent)
         {
             Destroy(child.gameObject);
         }
+
+        if (ownEntityKey.Id == "")
+        {
+            GetOwnEntityKey(result =>
+            {
+                DoListMembership(result);
+            });
+        }
+        else
+        {
+            DoListMembership(ownEntityKey);
+        }
     }
 
-    private void OnCreateGroup(CreateGroupResponse response)
+    void DoListMembership(EntityKey entityKey)
     {
-        Debug.Log("Group Created: " + response.GroupName + " - " + response.Group.Id);
+        Debug.Log("test3 : " + entityKey);
 
-        var prevRequest = (CreateGroupRequest)response.Request;
-        EntityGroupPairs.Add(new KeyValuePair<string, string>(prevRequest.Entity.Id, response.Group.Id));
-        GroupNameById[response.Group.Id] = response.GroupName;
+        var request = new ListMembershipRequest { Entity = entityKey };
+        PlayFabGroupsAPI.ListMembership(request,
+            result =>
+            {
+                loadingGuildInfo = false;
+                //guildListContent.gameObject.SetActive(true);
+
+                //foreach (Transform child in guildListContent)
+                //{
+                //    Destroy(child.gameObject);
+                //}
+
+                Debug.Log("Successfully get current guild info");
+
+                if (result.Groups.Count <= 0)
+                {
+                    guildController.notinGuildObj.SetActive(true);
+                }
+                else
+                {
+                    var group = result.Groups[0]; //get first group player is in
+                    guildInfoObj.guildNameStr = group.GroupName;
+                    guildInfoObj.guildName.text = group.GroupName;
+
+                    //get group tag and desc
+
+                    GetGroupData(dataResult =>
+                    {
+                        var data = dataResult["GroupData"];
+                        Dictionary<string, object> dict = PlayFabSimpleJson.DeserializeObject<Dictionary<string, object>>(data.DataObject.ToString());
+
+                        if (dict.TryGetValue("Description", out object descObj))
+                        {
+                            guildInfoObj.guildDesc.text = (string)descObj;
+                        }
+
+                        if (dict.TryGetValue("Tag", out object tagObj))
+                        {
+                            guildInfoObj.guildTagStr = (string)tagObj;
+                            guildInfoObj.guildName.text = guildInfoObj.guildNameStr + "(" + guildInfoObj.guildTagStr + ")";
+                        }
+                    }, group.Group);
+
+                    //get members
+                    var req2 = new ListGroupMembersRequest
+                    {
+                        Group = group.Group
+                    };
+
+                    PlayFabGroupsAPI.ListGroupMembers(req2,
+                        result2 =>
+                        {
+                            int memberCount = -1; //dont count admin (title)
+                            int totalWealth = 0;
+
+                            foreach (var role in result2.Members)
+                            {
+                                memberCount += role.Members.Count;
+
+                                foreach (var member in role.Members)
+                                {
+                                    if (member.Key.Type != "title_player_account")
+                                        continue;
+
+                                    var playFabId = member.Lineage["master_player_account"].Id;
+
+                                    var req3 = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+                                    {
+                                        FunctionName = "GetUserVirtualCurrency",
+                                        FunctionParameter = new { targetId = playFabId }
+                                    };
+
+                                    PlayFabClientAPI.ExecuteCloudScript(req3
+                                    , result3 =>
+                                    {
+                                        Debug.Log("Successfully gotten member coins");
+                                        if (result3.Logs != null)
+                                        {
+                                            foreach (var log in result3.Logs)
+                                            {
+                                                Debug.Log(log.Message);
+                                            }
+                                        }
+                                        Dictionary<string, object> dict = PlayFabSimpleJson.DeserializeObject<Dictionary<string, object>>(result3.FunctionResult.ToString());
+                                        if (dict.TryGetValue("Coins", out object coinsObj))
+                                        {
+                                            totalWealth += Convert.ToInt32(coinsObj);
+                                        }
+
+                                        guildInfoObj.guildWealth.text = totalWealth.ToString();
+                                    }
+                                    , error3 =>
+                                    {
+                                        Debug.Log("Failed to make guild");
+                                        OnSharedError(error3);
+                                    });
+
+                                }
+                            }
+
+                            guildInfoObj.guildMembers.text = memberCount.ToString();
+                        },
+                        error2 =>
+                        {
+
+                        });
+                }
+            },
+            error =>
+            {
+                OnSharedError(error);
+            });
     }
+
     public void DeleteGroup(string groupId)
     {
         // A title, or player-controlled entity with authority to do so, decides to destroy an existing group
@@ -252,47 +382,6 @@ public class GuildManager : MonoBehaviour
                 temp.Add(each);
         EntityGroupPairs.IntersectWith(temp);
         GroupNameById.Remove(prevRequest.Group.Id);
-    }
-
-    public void InviteToGroup(string groupId, EntityKey entityKey)
-    {
-        // A player-controlled entity invites another player-controlled entity to an existing group
-        var request = new InviteToGroupRequest { Group = EntityKeyMaker(groupId), Entity = entityKey };
-        PlayFabGroupsAPI.InviteToGroup(request, OnInvite, OnSharedError);
-    }
-    public void OnInvite(InviteToGroupResponse response)
-    {
-        var prevRequest = (InviteToGroupRequest)response.Request;
-
-        // Presumably, this would be part of a separate process where the recipient reviews and accepts the request
-        var request = new AcceptGroupInvitationRequest { Group = EntityKeyMaker(prevRequest.Group.Id), Entity = prevRequest.Entity };
-        PlayFabGroupsAPI.AcceptGroupInvitation(request, OnAcceptInvite, OnSharedError);
-    }
-    public void OnAcceptInvite(EmptyResponse response)
-    {
-        var prevRequest = (AcceptGroupInvitationRequest)response.Request;
-        Debug.Log("Entity Added to Group: " + prevRequest.Entity.Id + " to " + prevRequest.Group.Id);
-        EntityGroupPairs.Add(new KeyValuePair<string, string>(prevRequest.Entity.Id, prevRequest.Group.Id));
-    }
-
-    public void ApplyToGroup(string groupId, EntityKey entityKey)
-    {
-        // A player-controlled entity applies to join an existing group (of which they are not already a member)
-        var request = new ApplyToGroupRequest { Group = EntityKeyMaker(groupId), Entity = entityKey };
-        PlayFabGroupsAPI.ApplyToGroup(request, OnApply, OnSharedError);
-    }
-    public void OnApply(ApplyToGroupResponse response)
-    {
-        var prevRequest = (ApplyToGroupRequest)response.Request;
-
-        // Presumably, this would be part of a separate process where the recipient reviews and accepts the request
-        var request = new AcceptGroupApplicationRequest { Group = prevRequest.Group, Entity = prevRequest.Entity };
-        PlayFabGroupsAPI.AcceptGroupApplication(request, OnAcceptApplication, OnSharedError);
-    }
-    public void OnAcceptApplication(EmptyResponse response)
-    {
-        var prevRequest = (AcceptGroupApplicationRequest)response.Request;
-        Debug.Log("Entity Added to Group: " + prevRequest.Entity.Id + " to " + prevRequest.Group.Id);
     }
     public void KickMember(string groupId, EntityKey entityKey)
     {
@@ -354,6 +443,7 @@ public class GuildManager : MonoBehaviour
             {
                 PlayFab.ClientModels.UserAccountInfo userAccInfo = result.AccountInfo;
                 var playerEntity = userAccInfo.TitleInfo.TitlePlayerAccount;
+                ownEntityKey = EntityKeyMaker(playerEntity);
                 onEntityKeyReceived(EntityKeyMaker(playerEntity));
             },
             (error) =>

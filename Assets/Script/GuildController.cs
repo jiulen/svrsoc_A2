@@ -13,9 +13,11 @@ public class GuildController : MonoBehaviour
     public PlayFabUserMgtTMP pfManager;
     public GuildManager guildManager;
 
-    public GameObject loadingGuildListObj, loadingCurrentGuildObj;
+    public GameObject loadingGuildListObj, loadingCurrentGuildObj, loadingGuildInfoObj, notinGuildObj;
 
     public GameObject createGuildPanel;
+
+    public GuildInfoObj guildInfoObj;
 
     // Start is called before the first frame update
     void Start()
@@ -25,6 +27,7 @@ public class GuildController : MonoBehaviour
         guildsToggle.onValueChanged.AddListener((isOn) => {
             if (isOn)
             {
+                guildInfoObj.gameObject.SetActive(false);
                 guildManager.ShowGuildList();
                 guildsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
@@ -36,6 +39,7 @@ public class GuildController : MonoBehaviour
         currGuildToggle.onValueChanged.AddListener((isOn) => {
             if (isOn)
             {
+                guildInfoObj.gameObject.SetActive(true);
                 guildManager.ShowCurrentGuild();
                 currGuildToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
@@ -68,12 +72,23 @@ public class GuildController : MonoBehaviour
         {
             loadingCurrentGuildObj.SetActive(false);
         }
+
+        if (guildManager.loadingGuildInfo && !loadingCurrentGuildObj.activeSelf)
+        {
+            loadingGuildInfoObj.SetActive(true);
+        }
+
+        if (!guildManager.loadingGuildInfo && loadingCurrentGuildObj.activeSelf)
+        {
+            loadingGuildInfoObj.SetActive(false);
+        }
     }
     public void OpenPanel(System.Action callBack = null)
     {
         panel.SetActive(true);
         playerCallback = callBack;
-        
+
+        guildInfoObj.gameObject.SetActive(false);
         guildsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
         currGuildToggle.targetGraphic.color = new Color(1, 1, 1);
 
