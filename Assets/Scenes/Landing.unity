@@ -2581,6 +2581,7 @@ MonoBehaviour:
     Id: 
     Type: 
   launcher: {fileID: 1589409626}
+  openCreateGuildButton: {fileID: 1105224655}
 --- !u!1 &142842708
 GameObject:
   m_ObjectHideFlags: 0

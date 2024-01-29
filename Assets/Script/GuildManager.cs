@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using PlayFab.Json;
+using UnityEngine.UI;
 
 public class GuildManager : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class GuildManager : MonoBehaviour
     public EntityKey ownEntityKey = new() { Id = "", Type = ""};
 
     public Launcher launcher;
+
+    public Button openCreateGuildButton;
 
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
@@ -102,6 +105,9 @@ public class GuildManager : MonoBehaviour
                     Debug.Log(log.Message);
                 }
             }
+
+            guildController.guildsToggle.isOn = false;
+            guildController.currGuildToggle.isOn = true;
         }
         , error =>
         {
@@ -112,6 +118,25 @@ public class GuildManager : MonoBehaviour
 
     public void ShowGuildList()
     {
+        openCreateGuildButton.interactable = false;
+        if (ownEntityKey.Id == "")
+        {
+            GetOwnEntityKey(ownKey =>
+            {
+                CheckIfInGroup(inGroup =>
+                {
+                    openCreateGuildButton.interactable = !inGroup;
+                }, ownKey);
+            });
+        }
+        else
+        {
+            CheckIfInGroup(inGroup =>
+            {
+                openCreateGuildButton.interactable = !inGroup;
+            }, ownEntityKey);
+        }
+
         loadingGuildList = true;
         guildListContent.gameObject.SetActive(false);
         guildInfoObj.gameObject.SetActive(false);
@@ -147,6 +172,24 @@ public class GuildManager : MonoBehaviour
                     newGuildListItem.guildName.text = guild.GroupName;
                     newGuildListItem.guildMembers.text = "? Members";
                     newGuildListItem.guildWealth.text = "? Total";
+
+                    if (ownEntityKey.Id == "")
+                    {
+                        GetOwnEntityKey(ownKey =>
+                        {
+                            CheckIfInGroup(inGroup =>
+                            {
+                                newGuildListItem.joinButton.interactable = !inGroup;
+                            }, ownKey);
+                        });
+                    }
+                    else
+                    {
+                        CheckIfInGroup(inGroup =>
+                        {
+                            newGuildListItem.joinButton.interactable = !inGroup;
+                        }, ownEntityKey);
+                    }
 
                     //Check guild members
                     var req2 = new ListGroupMembersRequest
@@ -506,5 +549,22 @@ public class GuildManager : MonoBehaviour
                                               response(result.PlayerProfile.DisplayName);
                                           },
                                           error => { });
+    }
+
+    public void CheckIfInGroup(Action<bool> inGroup, EntityKey entityKey)
+    {
+        var request = new ListMembershipRequest { Entity = entityKey };
+        PlayFabGroupsAPI.ListMembership(request,
+            result =>
+            {
+                if (result.Groups.Count <= 0)
+                    inGroup(false);
+                else
+                    inGroup(true);
+            },
+            error =>
+            {
+                OnSharedError(error);
+            });
     }
 }
