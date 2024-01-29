@@ -117,7 +117,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
     public void MakeScrollNotif(string textDisplayed, Color textColor)
     {
         GameObject newTextPopup = Instantiate(moveUpTextPrefab);
-        newTextPopup.transform.SetParent(popupTextHolder);
+        newTextPopup.transform.SetParent(popupTextHolder, false);
         newTextPopup.transform.localPosition = Vector3.zero;
 
         MoveUpText moveUpText = newTextPopup.GetComponent<MoveUpText>();
@@ -932,7 +932,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                 GameObject newItem = Instantiate(friendInfoPrefab);
                 FriendInfoItem newFriendInfoItem = newItem.GetComponent<FriendInfoItem>();
 
-                newItem.transform.SetParent(friendsParent);
+                newItem.transform.SetParent(friendsParent, false);
                 newItem.transform.localPosition = Vector3.zero;
 
                 newFriendInfoItem.playerName.text = friend.TitleDisplayName;
@@ -1003,7 +1003,7 @@ public class PlayFabUserMgtTMP : MonoBehaviour
                     GameObject newItem = Instantiate(friendReqPrefab);
                     FriendRequestItem newFriendRequestItem = newItem.GetComponent<FriendRequestItem>();
 
-                    newItem.transform.SetParent(friendsParent);
+                    newItem.transform.SetParent(friendsParent, false);
                     newItem.transform.localPosition = Vector3.zero;
 
                     newFriendRequestItem.playerName.text = friend.TitleDisplayName;
