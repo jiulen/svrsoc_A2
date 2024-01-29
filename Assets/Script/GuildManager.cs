@@ -33,6 +33,8 @@ public class GuildManager : MonoBehaviour
 
     List<GuildMemberItem> guildMemberItemList = new();
 
+    public Player player;
+
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
     public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
@@ -329,6 +331,7 @@ public class GuildManager : MonoBehaviour
 
                         if (dict.TryGetValue("Tag", out object tagObj))
                         {
+                            player.SetPlayerTag("(" + (string)tagObj + ")");
                             guildInfoObj.guildTagStr = (string)tagObj;
                             guildInfoObj.guildName.text = guildInfoObj.guildNameStr + "(" + guildInfoObj.guildTagStr + ")";
                         }
@@ -658,6 +661,9 @@ public class GuildManager : MonoBehaviour
 
                 guildController.guildsToggle.isOn = true;
                 guildController.currGuildToggle.isOn = false;
+
+                guildInfoObj.guildTagStr = "";
+                guildInfoObj.guildEntityKey = null;
             }
             , error =>
             {
@@ -696,6 +702,9 @@ public class GuildManager : MonoBehaviour
             {
                 guildController.guildsToggle.isOn = true;
                 guildController.currGuildToggle.isOn = false;
+
+                guildInfoObj.guildTagStr = "";
+                guildInfoObj.guildEntityKey = null;
             },
             error =>
             {

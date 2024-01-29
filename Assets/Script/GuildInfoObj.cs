@@ -20,16 +20,4 @@ public class GuildInfoObj : MonoBehaviour
     public Button leaveButton;
 
     public TMP_Text leaveButtonText;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

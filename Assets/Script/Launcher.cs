@@ -21,6 +21,8 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public PhotonChatManager chatManager;
 
+    public GuildManager guildManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -59,6 +61,10 @@ public class Launcher : MonoBehaviourPunCallbacks
             GameObject playerObj = PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
             playerObj.name = "Player (Me)";
             Player playerScript = playerObj.GetComponent<Player>();
+
+            guildManager.player = playerScript;
+            playerScript.guildManager = guildManager;
+
             playerScript.settingButton.SetActive(false);
 
             pfManager.player = playerScript;

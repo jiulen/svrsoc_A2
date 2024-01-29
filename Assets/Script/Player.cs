@@ -45,6 +45,7 @@ public class Player : MonoBehaviourPunCallbacks
     private TextMeshProUGUI currentText;
 
     //player name (head)
+    public string playerNameStr, playerTagStr;
     public TMP_Text playerName;
     public GameObject settingButton;
 
@@ -57,6 +58,7 @@ public class Player : MonoBehaviourPunCallbacks
 
     //strings
     public const string PLAYER_NAME = "PlayerName";
+    public const string PLAYER_TAG = "PlayerTag";
     public const string PLAYER_ID = "PlayerID";
     public const string TRADE_PLAYER_ID = "TradePlayerID";
     public const string TRADE_ID = "TradeID";
@@ -66,6 +68,8 @@ public class Player : MonoBehaviourPunCallbacks
     public const string TRADE_RESULT_PHOTON_ID = "TradeResultPhotonID"; //make sure only trade owner receives it
 
     public TradeController tradeController;
+
+    public GuildManager guildManager;
 
     // Start is called before the first frame update
     void Start()
@@ -90,8 +94,14 @@ public class Player : MonoBehaviourPunCallbacks
 
         if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_NAME, out object newPlayerName))
         {
-            playerName.text = (string)newPlayerName;
-            playerOptionsName.text = (string)newPlayerName;
+            playerNameStr = (string)newPlayerName;
+            playerName.text = playerTagStr + playerNameStr;
+            playerOptionsName.text = playerNameStr;
+        }
+        if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_TAG, out object newPlayerTag))
+        {
+            playerTagStr = (string)newPlayerTag;
+            playerName.text = playerTagStr + playerNameStr;
         }
         if (photonView.Owner.CustomProperties.TryGetValue(PLAYER_ID, out object newPlayerID))
         {
@@ -103,6 +113,8 @@ public class Player : MonoBehaviourPunCallbacks
 
         if (photonView.IsMine || isOffline)
         {
+            guildManager.ShowCurrentGuild();
+
             eButton.SetActive(false);
         }
 
@@ -297,8 +309,18 @@ public class Player : MonoBehaviourPunCallbacks
         }
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProps);
 
-        playerName.text = displayName;
+        playerNameStr = displayName;
+        playerName.text = playerTagStr + playerNameStr;
         playerOptionsName.text = displayName;
+    }
+
+    public void SetPlayerTag(string newTag)
+    {
+        ExitGames.Client.Photon.Hashtable playerProps = new() { { PLAYER_TAG, newTag } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(playerProps);
+
+        playerTagStr = newTag;
+        playerName.text = playerTagStr + playerNameStr;
     }
 
     public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
@@ -311,8 +333,15 @@ public class Player : MonoBehaviourPunCallbacks
             {
                 if (changedProps.TryGetValue(PLAYER_NAME, out object newPlayerName))
                 {
-                    playerName.text = (string)newPlayerName;
-                    playerOptionsName.text = (string)newPlayerName;
+                    playerNameStr = (string)newPlayerName;
+                    playerName.text = playerTagStr + playerNameStr;
+                    playerOptionsName.text = playerNameStr;
+                }
+
+                if (changedProps.TryGetValue(PLAYER_TAG, out object newPlayerTag))
+                {
+                    playerTagStr = (string)newPlayerTag;
+                    playerName.text = playerTagStr + playerNameStr;
                 }
 
                 if (changedProps.TryGetValue(PLAYER_ID, out object newPlayerID))

@@ -6708,6 +6708,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playfabPlayerID: 
   isOffline: 0
+  playerNameStr: 
+  playerTagStr: 
   playerName: {fileID: 877423281558802418}
   settingButton: {fileID: 8283173257215351221}
   playerOptionsName: {fileID: 9106918168197762470}
