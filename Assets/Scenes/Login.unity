@@ -3539,6 +3539,8 @@ MonoBehaviour:
   loadingPlayerData: 0
   loadingDispName: 0
   loadingMOTD: 0
+  loadingFriendList: 0
+  loadingFriendRequests: 0
   player: {fileID: 0}
   launcher: {fileID: 0}
   updateFriendsTimer: 0
@@ -8709,8 +8711,8 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
+  m_HDR: 0
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
