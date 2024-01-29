@@ -2580,6 +2580,7 @@ MonoBehaviour:
   ownEntityKey:
     Id: 
     Type: 
+  launcher: {fileID: 1589409626}
 --- !u!1 &142842708
 GameObject:
   m_ObjectHideFlags: 0
@@ -30421,6 +30422,7 @@ MonoBehaviour:
   isOffline: 0
   pfManager: {fileID: 93469141}
   friendsParent: {fileID: 1977891383}
+  guildListContent: {fileID: 2050430070}
   friendNotifPrefab: {fileID: 3399724531231586195, guid: 2d50511bac363ce4c8c9ddf56719567f, type: 3}
   friendNotifParent: {fileID: 142842709}
   chatManager: {fileID: 1681827828}

@@ -14,7 +14,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     Photon.Realtime.Player[] onlinePlayers;
 
-    public Transform friendsParent;
+    public Transform friendsParent, guildListContent;
 
     public GameObject friendNotifPrefab;
     public Transform friendNotifParent;
@@ -151,6 +151,36 @@ public class Launcher : MonoBehaviourPunCallbacks
                         req.status.text = "Offline";
                         req.status.color = Color.gray;
                     }
+                }
+            }
+        }
+
+        foreach (Transform child in guildListContent)
+        {
+            var info = child.GetComponent<GuildMemberItem>();
+
+            if (info != null)
+            {
+                bool foundPlayer = false;
+
+                foreach (var friendPlayer in onlinePlayers)
+                {
+                    if (friendPlayer.UserId == info.memberPlayfabID)
+                    {
+                        foundPlayer = true;
+                        break;
+                    }
+                }
+
+                if (foundPlayer)
+                {
+                    info.status.text = "Online";
+                    info.status.color = Color.green;
+                }
+                else
+                {
+                    info.status.text = "Offline";
+                    info.status.color = Color.gray;
                 }
             }
         }

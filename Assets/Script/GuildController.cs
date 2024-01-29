@@ -28,6 +28,10 @@ public class GuildController : MonoBehaviour
             if (isOn)
             {
                 guildInfoObj.gameObject.SetActive(false);
+                guildManager.loadingCurrentGuild = false;
+                loadingCurrentGuildObj.SetActive(false);
+                guildManager.loadingGuildInfo = false;
+                loadingGuildInfoObj.SetActive(false);
                 guildManager.ShowGuildList();
                 guildsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
@@ -40,6 +44,8 @@ public class GuildController : MonoBehaviour
             if (isOn)
             {
                 guildInfoObj.gameObject.SetActive(true);
+                guildManager.loadingGuildList = false;
+                loadingGuildListObj.SetActive(false);
                 guildManager.ShowCurrentGuild();
                 currGuildToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }

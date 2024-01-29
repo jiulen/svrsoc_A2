@@ -24,6 +24,8 @@ public class GuildManager : MonoBehaviour
 
     public EntityKey ownEntityKey = new() { Id = "", Type = ""};
 
+    public Launcher launcher;
+
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
     public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
@@ -256,17 +258,12 @@ public class GuildManager : MonoBehaviour
             result =>
             {
                 loadingGuildInfo = false;
-                //guildListContent.gameObject.SetActive(true);
-
-                //foreach (Transform child in guildListContent)
-                //{
-                //    Destroy(child.gameObject);
-                //}
 
                 Debug.Log("Successfully get current guild info");
 
                 if (result.Groups.Count <= 0)
                 {
+                    loadingCurrentGuild = false;
                     guildController.notinGuildObj.SetActive(true);
                 }
                 else
@@ -312,11 +309,38 @@ public class GuildManager : MonoBehaviour
 
                                 foreach (var member in role.Members)
                                 {
+                                    loadingCurrentGuild = false;
+                                    guildListContent.gameObject.SetActive(true);
+
+                                    foreach (Transform child in guildListContent)
+                                    {
+                                        Destroy(child.gameObject);
+                                    }
+
                                     if (member.Key.Type != "title_player_account")
                                         continue;
 
                                     var playFabId = member.Lineage["master_player_account"].Id;
 
+                                    //get members info
+                                    GameObject newItem = Instantiate(guildMemberItemPrefab);
+                                    GuildMemberItem newGuildMemberItem = newItem.GetComponent<GuildMemberItem>();
+
+                                    newItem.transform.SetParent(guildListContent);
+                                    newItem.transform.localPosition = Vector3.zero;
+
+                                    newGuildMemberItem.playerName.text = "?";
+                                    newGuildMemberItem.coins.text = "?";
+                                    newGuildMemberItem.status.text = "Unknown";
+                                    newGuildMemberItem.status.color = Color.gray;
+                                    newGuildMemberItem.memberPlayfabID = playFabId;
+
+                                    GetDisplayName(dispNameResult =>
+                                    {
+                                        newGuildMemberItem.playerName.text = dispNameResult;
+                                    }, playFabId);
+
+                                    //get coins to show total wealth
                                     var req3 = new PlayFab.ClientModels.ExecuteCloudScriptRequest
                                     {
                                         FunctionName = "GetUserVirtualCurrency",
@@ -337,7 +361,10 @@ public class GuildManager : MonoBehaviour
                                         Dictionary<string, object> dict = PlayFabSimpleJson.DeserializeObject<Dictionary<string, object>>(result3.FunctionResult.ToString());
                                         if (dict.TryGetValue("Coins", out object coinsObj))
                                         {
-                                            totalWealth += Convert.ToInt32(coinsObj);
+                                            int thisPlayerCoins = Convert.ToInt32(coinsObj);
+
+                                            totalWealth += thisPlayerCoins;
+                                            newGuildMemberItem.coins.text = thisPlayerCoins.ToString();
                                         }
 
                                         guildInfoObj.guildWealth.text = totalWealth.ToString();
@@ -465,5 +492,19 @@ public class GuildManager : MonoBehaviour
                 OnSharedError(error);
             }
         );
+    }
+
+    public void GetDisplayName(Action<string> response, string playfabId)
+    {
+        var ProfileRequestParams = new PlayFab.ClientModels.GetPlayerProfileRequest
+        {
+            PlayFabId = playfabId
+        };
+
+        PlayFabClientAPI.GetPlayerProfile(ProfileRequestParams,
+                                          result => {
+                                              response(result.PlayerProfile.DisplayName);
+                                          },
+                                          error => { });
     }
 }

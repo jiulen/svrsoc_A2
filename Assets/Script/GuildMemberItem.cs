@@ -6,13 +6,13 @@ using TMPro;
 
 public class GuildMemberItem : MonoBehaviour
 {
-    public TMP_Text playerName, xp, status;
+    public TMP_Text playerName, coins, status;
 
     PlayFabUserMgtTMP pfManager;
 
     GuildManager guildManager;
 
-    public string friendID;
+    public string memberPlayfabID;
 
     public Button kickButton;
 
