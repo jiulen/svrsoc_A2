@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using PlayFab.Json;
 
 public class GuildManager : MonoBehaviour
 {
@@ -13,6 +14,9 @@ public class GuildManager : MonoBehaviour
     public TMP_InputField guildName_if, guildDesc_if, guildTag_if;
 
     public GuildController guildController;
+
+    public Transform guildListContent;
+    public GameObject guildListItemPrefab;
 
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
@@ -99,6 +103,83 @@ public class GuildManager : MonoBehaviour
             OnSharedError(error);
         });
     }
+
+    public void ShowGuildList()
+    {
+        loadingGuildList = true;
+
+        var req = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+        {
+            FunctionName = "ListTitleMembership"
+        };
+
+        PlayFabClientAPI.ExecuteCloudScript(req
+        , result =>
+        {
+            Debug.Log("Successfully get guild list");
+
+            if (result.FunctionResult != null)
+            {
+                JsonObject jsonResult = (JsonObject)result.FunctionResult;
+
+                if (result.Logs != null)
+            {
+                foreach (var log in result.Logs)
+                {
+                    Debug.Log(log.Message);
+                }
+            }
+
+                if (jsonResult.TryGetValue("listTitleMembership", out object listResponseObj))
+                {
+                    var listResponse = (ListMembershipResponse)listResponseObj;
+                    foreach (var guild in listResponse.Groups)
+                    {
+                        GameObject newItem = Instantiate(guildListItemPrefab);
+                        GuildListItem newGuildListItem = newItem.GetComponent<GuildListItem>();
+
+                        newItem.transform.SetParent(guildListContent);
+                        newItem.transform.localPosition = Vector3.zero;
+
+                        newGuildListItem.guildName.text = guild.GroupName;
+                        newGuildListItem.guildMembers.text = "? Members";
+                        newGuildListItem.guildWealth.text = "? Total";
+
+                        //Check guild members
+                        var req2 = new ListGroupMembersRequest
+                        {
+                            Group = guild.Group
+                        };
+
+                        PlayFabGroupsAPI.ListGroupMembers(req2,
+                            result2 =>
+                            {
+                                int memberCount = 0;
+
+                                foreach (var role in result2.Members)
+                                {
+                                    memberCount += role.Members.Count;
+                                }
+
+                                newGuildListItem.guildMembers.text = memberCount + " Members";
+                            },
+                            error2 =>
+                            {
+
+                            });
+                    }
+
+                    loadingGuildList = false;
+                }
+            }
+        }
+        , error =>
+        {
+            Debug.Log("Failed to get guild list");
+            OnSharedError(error);
+        });
+    }
+
     private void OnCreateGroup(CreateGroupResponse response)
     {
         Debug.Log("Group Created: " + response.GroupName + " - " + response.Group.Id);
@@ -234,13 +315,18 @@ public class GuildManager : MonoBehaviour
             });
     }
 
-    public void Test()
+    public void GetGroupData(Action<Dictionary<string, PlayFab.DataModels.ObjectResult>> response, EntityKey groupEntityKey)
     {
-        GetPlayerEntityKey(TestA, "0");
-    }
-
-    public void TestA(EntityKey key)
-    {
-
+        var getRequest = new PlayFab.DataModels.GetObjectsRequest { Entity = new PlayFab.DataModels.EntityKey { Id = groupEntityKey.Id, Type = groupEntityKey.Type } };
+        PlayFabDataAPI.GetObjects(getRequest,
+            result => {
+                var objs = result.Objects;
+                response(objs);
+            },
+            error =>
+            {
+                OnSharedError(error);
+            }
+        );
     }
 }

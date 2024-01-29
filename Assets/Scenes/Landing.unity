@@ -2044,6 +2044,8 @@ MonoBehaviour:
   guildDesc_if: {fileID: 1727423853}
   guildTag_if: {fileID: 1418737158}
   guildController: {fileID: 1244880379}
+  guildListContent: {fileID: 2050430070}
+  guildListItemPrefab: {fileID: 8397813145919526875, guid: 30476008c8664764ba678858e5a7745a, type: 3}
 --- !u!1 &142842708
 GameObject:
   m_ObjectHideFlags: 0

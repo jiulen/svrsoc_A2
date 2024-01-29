@@ -25,7 +25,7 @@ public class GuildController : MonoBehaviour
         guildsToggle.onValueChanged.AddListener((isOn) => {
             if (isOn)
             {
-
+                guildManager.ShowGuildList();
                 guildsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
             else
@@ -76,6 +76,8 @@ public class GuildController : MonoBehaviour
         
         guildsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
         currGuildToggle.targetGraphic.color = new Color(1, 1, 1);
+
+        guildManager.ShowGuildList();
     }
 
     public void ClosePanel()
