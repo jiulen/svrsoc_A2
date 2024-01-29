@@ -294,8 +294,6 @@ public class GuildManager : MonoBehaviour
 
     void DoListMembership(EntityKey entityKey)
     {
-        Debug.Log("test3 : " + entityKey);
-
         var request = new ListMembershipRequest { Entity = entityKey };
         PlayFabGroupsAPI.ListMembership(request,
             result =>
@@ -346,20 +344,20 @@ public class GuildManager : MonoBehaviour
                             int memberCount = -1; //dont count admin (title)
                             int totalWealth = 0;
 
+                            loadingCurrentGuild = false;
+                            guildListContent.gameObject.SetActive(true);
+
+                            foreach (Transform child in guildListContent)
+                            {
+                                Destroy(child.gameObject);
+                            }
+
                             foreach (var role in result2.Members)
                             {
                                 memberCount += role.Members.Count;
 
                                 foreach (var member in role.Members)
                                 {
-                                    loadingCurrentGuild = false;
-                                    guildListContent.gameObject.SetActive(true);
-
-                                    foreach (Transform child in guildListContent)
-                                    {
-                                        Destroy(child.gameObject);
-                                    }
-
                                     if (member.Key.Type != "title_player_account")
                                         continue;
 
@@ -566,5 +564,50 @@ public class GuildManager : MonoBehaviour
             {
                 OnSharedError(error);
             });
+    }
+
+    public void OnJoinButtonClicked(EntityKey groupEntityKey)
+    {
+        if (ownEntityKey.Id == "")
+        {
+            GetOwnEntityKey(ownKey =>
+            {
+                JoinGuild(groupEntityKey, ownKey);
+            });
+        }
+        else
+        {
+            JoinGuild(groupEntityKey, ownEntityKey);
+        }
+    }
+
+    void JoinGuild(EntityKey groupEntityKey, EntityKey playerEntityKey)
+    {
+        var req = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+        {
+            FunctionName = "JoinTitleGroup",
+            FunctionParameter = new { groupkey = groupEntityKey, entitykey = playerEntityKey }
+        };
+
+        PlayFabClientAPI.ExecuteCloudScript(req
+        , result =>
+        {
+            Debug.Log("Successfully joined guild");
+            if (result.Logs != null)
+            {
+                foreach (var log in result.Logs)
+                {
+                    Debug.Log(log.Message);
+                }
+            }
+
+            guildController.guildsToggle.isOn = false;
+            guildController.currGuildToggle.isOn = true;
+        }
+        , error =>
+        {
+            Debug.Log("Failed to join guild");
+            OnSharedError(error);
+        });
     }
 }

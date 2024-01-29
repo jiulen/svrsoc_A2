@@ -22,7 +22,7 @@ public class GuildListItem : MonoBehaviour
 
         joinButton.onClick.AddListener(() =>
         {
-            //guildManager.
+            guildManager.OnJoinButtonClicked(guildEntityKey);
         });
     }
 
