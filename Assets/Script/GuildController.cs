@@ -36,7 +36,7 @@ public class GuildController : MonoBehaviour
         currGuildToggle.onValueChanged.AddListener((isOn) => {
             if (isOn)
             {
-                ShowCurrentGuild();
+                guildManager.ShowCurrentGuild();
                 currGuildToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
             else
@@ -84,11 +84,6 @@ public class GuildController : MonoBehaviour
     {
         panel.SetActive(false);
         playerCallback();
-    }
-
-    void ShowCurrentGuild()
-    {
-
     }
 
     public void ShowCreateGuildPanel(bool show)

@@ -107,77 +107,124 @@ public class GuildManager : MonoBehaviour
     public void ShowGuildList()
     {
         loadingGuildList = true;
+        guildListContent.gameObject.SetActive(false);
 
-        var req = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+        foreach (Transform child in guildListContent)
         {
-            FunctionName = "ListTitleMembership"
-        };
-
-        PlayFabClientAPI.ExecuteCloudScript(req
-        , result =>
-        {
-            Debug.Log("Successfully get guild list");
-
-            if (result.FunctionResult != null)
-            {
-                JsonObject jsonResult = (JsonObject)result.FunctionResult;
-
-                if (result.Logs != null)
-            {
-                foreach (var log in result.Logs)
-                {
-                    Debug.Log(log.Message);
-                }
-            }
-
-                if (jsonResult.TryGetValue("listTitleMembership", out object listResponseObj))
-                {
-                    var listResponse = (ListMembershipResponse)listResponseObj;
-                    foreach (var guild in listResponse.Groups)
-                    {
-                        GameObject newItem = Instantiate(guildListItemPrefab);
-                        GuildListItem newGuildListItem = newItem.GetComponent<GuildListItem>();
-
-                        newItem.transform.SetParent(guildListContent);
-                        newItem.transform.localPosition = Vector3.zero;
-
-                        newGuildListItem.guildName.text = guild.GroupName;
-                        newGuildListItem.guildMembers.text = "? Members";
-                        newGuildListItem.guildWealth.text = "? Total";
-
-                        //Check guild members
-                        var req2 = new ListGroupMembersRequest
-                        {
-                            Group = guild.Group
-                        };
-
-                        PlayFabGroupsAPI.ListGroupMembers(req2,
-                            result2 =>
-                            {
-                                int memberCount = 0;
-
-                                foreach (var role in result2.Members)
-                                {
-                                    memberCount += role.Members.Count;
-                                }
-
-                                newGuildListItem.guildMembers.text = memberCount + " Members";
-                            },
-                            error2 =>
-                            {
-
-                            });
-                    }
-
-                    loadingGuildList = false;
-                }
-            }
+            Destroy(child.gameObject);
         }
-        , error =>
+
+        var request = new ListMembershipRequest { Entity = new EntityKey { Id = "A8E0B", Type = "title" } };
+        PlayFabGroupsAPI.ListMembership(request, 
+            result =>
+            {
+                loadingGuildList = false;
+                guildListContent.gameObject.SetActive(true);
+
+                foreach (Transform child in guildListContent)
+                {
+                    Destroy(child.gameObject);
+                }
+
+                Debug.Log("Successfully get guild list");
+
+                foreach (var guild in result.Groups)
+                {
+                    GameObject newItem = Instantiate(guildListItemPrefab);
+                    GuildListItem newGuildListItem = newItem.GetComponent<GuildListItem>();
+
+                    newItem.transform.SetParent(guildListContent);
+                    newItem.transform.localPosition = Vector3.zero;
+
+                    newGuildListItem.guildEntityKey = guild.Group;
+                    newGuildListItem.guildName.text = guild.GroupName;
+                    newGuildListItem.guildMembers.text = "? Members";
+                    newGuildListItem.guildWealth.text = "? Total";
+
+                    //Check guild members
+                    var req2 = new ListGroupMembersRequest
+                    {
+                        Group = guild.Group
+                    };
+
+                    PlayFabGroupsAPI.ListGroupMembers(req2,
+                        result2 =>
+                        {
+                            int memberCount = -1; //dont count admin (title)
+                            int totalWealth = 0;
+
+                            foreach (var role in result2.Members)
+                            {
+                                memberCount += role.Members.Count;
+
+                                foreach (var member in role.Members)
+                                {
+                                    if (member.Key.Type != "title_player_account")
+                                        continue;
+
+                                    var playFabId = member.Lineage["master_player_account"].Id;
+
+                                    var req3 = new PlayFab.ClientModels.ExecuteCloudScriptRequest
+                                    {
+                                        FunctionName = "GetUserVirtualCurrency",
+                                        FunctionParameter = new { targetId = playFabId }
+                                    };
+
+                                    PlayFabClientAPI.ExecuteCloudScript(req3
+                                    , result3 =>
+                                    {
+                                        Debug.Log("Successfully gotten member coins");
+                                        if (result3.Logs != null)
+                                        {
+                                            foreach (var log in result3.Logs)
+                                            {
+                                                Debug.Log(log.Message);
+                                            }
+                                        }
+                                        Dictionary<string, object> dict = PlayFabSimpleJson.DeserializeObject<Dictionary<string, object>>(result3.FunctionResult.ToString());
+                                        if (dict.TryGetValue("Coins", out object coinsObj))
+                                        {
+                                            totalWealth += Convert.ToInt32(coinsObj);
+                                        }
+
+                                        newGuildListItem.guildWealth.text = totalWealth + " Total";
+                                    }
+                                    , error3 =>
+                                    {
+                                        Debug.Log("Failed to make guild");
+                                        OnSharedError(error3);
+                                    });
+
+                                }
+                            }
+
+                            if (memberCount == 1)
+                                newGuildListItem.guildMembers.text = memberCount + " Member";
+                            else
+                                newGuildListItem.guildMembers.text = memberCount + " Members";
+                        },
+                        error2 =>
+                        {
+
+                        });
+                }
+            },
+            error =>
+            {
+                Debug.Log("Failed to get guild list");
+                OnSharedError(error);
+            });
+    }
+
+    public void ShowCurrentGuild()
+    {
+        loadingCurrentGuild = true;
+        guildListContent.gameObject.SetActive(false);
+
+        foreach (Transform child in guildListContent)
         {
-            Debug.Log("Failed to get guild list");
-            OnSharedError(error);
-        });
+            Destroy(child.gameObject);
+        }
     }
 
     private void OnCreateGroup(CreateGroupResponse response)
