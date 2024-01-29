@@ -23,6 +23,8 @@ public class FriendsController : MonoBehaviour
             if (isOn)
             {
                 pfManager.GetShowFriends();
+                pfManager.loadingFriendRequests = false;
+                loadingFriendRequestsObj.SetActive(false);
                 friendsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
             else
@@ -34,6 +36,8 @@ public class FriendsController : MonoBehaviour
             if (isOn)
             {
                 pfManager.GetFriendRequests();
+                pfManager.loadingFriendList = false;
+                loadingFriendListObj.SetActive(false);
                 requestsToggle.targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
             }
             else
