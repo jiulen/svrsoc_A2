@@ -309,6 +309,9 @@ public class GuildManager : MonoBehaviour
                 {
                     loadingCurrentGuild = false;
                     guildController.notinGuildObj.SetActive(true);
+
+                    guildInfoObj.guildTagStr = "";
+                    player.SetPlayerTag("");
                 }
                 else
                 {
@@ -663,6 +666,7 @@ public class GuildManager : MonoBehaviour
                 guildController.currGuildToggle.isOn = false;
 
                 guildInfoObj.guildTagStr = "";
+                player.SetPlayerTag("");
                 guildInfoObj.guildEntityKey = null;
             }
             , error =>
@@ -704,6 +708,7 @@ public class GuildManager : MonoBehaviour
                 guildController.currGuildToggle.isOn = false;
 
                 guildInfoObj.guildTagStr = "";
+                player.SetPlayerTag("");
                 guildInfoObj.guildEntityKey = null;
             },
             error =>
