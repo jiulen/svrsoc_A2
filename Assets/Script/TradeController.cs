@@ -125,7 +125,7 @@ public class TradeController : MonoBehaviour
                 GameObject newItem = Instantiate(tradeInvenItemPrefab);
                 TradeInvenItem newTradeInvenItem = newItem.GetComponent<TradeInvenItem>();
 
-                newItem.transform.SetParent(tradeInvenItemContent);
+                newItem.transform.SetParent(tradeInvenItemContent, false);
 
                 newTradeInvenItem.SetInfo(itemInstance.ItemId, uses);
                 newTradeInvenItem.invenInstID = itemInstance.ItemInstanceId;
@@ -155,7 +155,7 @@ public class TradeController : MonoBehaviour
                 GameObject newItem = Instantiate(tradeReqItemPrefab);
                 TradeReqShopItem newTradeReqShopItem = newItem.GetComponent<TradeReqShopItem>();
 
-                newItem.transform.SetParent(tradeReqItemContent);
+                newItem.transform.SetParent(tradeReqItemContent, false);
 
                 newTradeReqShopItem.SetInfo(catItem.Key);
                 newTradeReqShopItem.tradeController = this;

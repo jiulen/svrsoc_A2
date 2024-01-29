@@ -92,7 +92,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             Debug.Log($"Player {newPlayer.NickName} has joined");
             GameObject friendNotif = Instantiate(friendNotifPrefab);
-            friendNotif.transform.SetParent(friendNotifParent);
+            friendNotif.transform.SetParent(friendNotifParent, false);
             friendNotif.transform.localPosition = Vector3.zero;
 
             var popupNotif = friendNotif.GetComponent<PopupNotif>();

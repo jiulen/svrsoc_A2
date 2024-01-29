@@ -102,7 +102,7 @@ public class ShopController : MonoBehaviour
                 GameObject newItem = Instantiate(shopItemPrefab);
                 ShopItem newShopItem = newItem.GetComponent<ShopItem>();
 
-                newItem.transform.SetParent(shopItemContent);
+                newItem.transform.SetParent(shopItemContent, false);
                 newItem.transform.localPosition = Vector3.zero;
 
                 string storeItemID = storeItem.ItemId;
@@ -140,7 +140,7 @@ public class ShopController : MonoBehaviour
                     GameObject newItem = Instantiate(shopInvenItemPrefab);
                     ShopInvenItem newShopInvenItem = newItem.GetComponent<ShopInvenItem>();
 
-                    newItem.transform.SetParent(shopInvenItemContent);
+                    newItem.transform.SetParent(shopInvenItemContent, false);
 
                     newShopInvenItem.SetInfo(itemInstance.ItemId, itemInstance.RemainingUses);
 

@@ -171,7 +171,7 @@ public class GuildManager : MonoBehaviour
                     GameObject newItem = Instantiate(guildListItemPrefab);
                     GuildListItem newGuildListItem = newItem.GetComponent<GuildListItem>();
 
-                    newItem.transform.SetParent(guildListContent);
+                    newItem.transform.SetParent(guildListContent, false);
                     newItem.transform.localPosition = Vector3.zero;
 
                     newGuildListItem.guildEntityKey = guild.Group;
@@ -400,7 +400,7 @@ public class GuildManager : MonoBehaviour
                                     GuildMemberItem newGuildMemberItem = newItem.GetComponent<GuildMemberItem>();
                                     guildMemberItemList.Add(newGuildMemberItem);
 
-                                    newItem.transform.SetParent(guildListContent);
+                                    newItem.transform.SetParent(guildListContent, false);
                                     newItem.transform.localPosition = Vector3.zero;
 
                                     newGuildMemberItem.playerName.text = "?";
